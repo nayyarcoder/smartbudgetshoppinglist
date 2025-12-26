@@ -1,0 +1,123 @@
+:root {
+  /* Font families */
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  
+  /* Color scheme */
+  --color-primary: #4F46E5;
+  --color-primary-dark: #4338CA;
+  --color-background: #FFFFFF;
+  --color-text: #1F2937;
+  --color-text-secondary: #6B7280;
+  --color-border: #E5E7EB;
+  --color-surface: #F9FAFB;
+  
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-weight: 400;
+  
+  color: var(--color-text);
+  background-color: var(--color-background);
+  
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+  /* Touch optimization */
+  -webkit-tap-highlight-color: rgba(79, 70, 229, 0.2);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  
+  /* Mobile-first: prevent zoom on input focus */
+  touch-action: manipulation;
+}
+
+html {
+  height: -webkit-fill-available;
+}
+
+/* Mobile-first button styles with touch-friendly sizing */
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.75em 1.5em;
+  min-height: 44px; /* iOS touch target minimum */
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: var(--color-primary);
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:hover {
+  background-color: var(--color-primary-dark);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+button:focus,
+button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Touch-friendly links */
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Prevent text selection on tap targets */
+.touch-target {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Support for dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #111827;
+    --color-text: #F9FAFB;
+    --color-text-secondary: #9CA3AF;
+    --color-border: #374151;
+    --color-surface: #1F2937;
+  }
+}
+
+/* Ensure proper scaling on mobile */
+@media screen and (max-width: 768px) {
+  body {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+  
+  input,
+  select,
+  textarea {
+    font-size: 16px; /* Prevent zoom on focus */
+  }
+}
