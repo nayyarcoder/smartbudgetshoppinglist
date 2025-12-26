@@ -4,14 +4,17 @@
   --font-body: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Courier New', monospace;
   
-  /* Color scheme */
-  --color-primary: #4F46E5;
-  --color-primary-dark: #4338CA;
-  --color-background: #FFFFFF;
-  --color-text: #1F2937;
-  --color-text-secondary: #6B7280;
-  --color-border: #E5E7EB;
-  --color-surface: #F9FAFB;
+  /* Light Theme Colors - from PRD */
+  --color-primary: oklch(0.45 0.08 160); /* Deep Forest Green */
+  --color-primary-dark: oklch(0.40 0.08 160); /* Darker Forest Green */
+  --color-secondary: oklch(0.65 0.12 35); /* Warm Terracotta */
+  --color-accent: oklch(0.68 0.17 25); /* Vibrant Coral */
+  --color-sage: oklch(0.75 0.06 150); /* Soft Sage */
+  --color-background: oklch(0.97 0.01 85); /* Cream */
+  --color-text: oklch(0.25 0.02 260); /* Deep Charcoal */
+  --color-text-secondary: oklch(0.50 0.02 260); /* Medium Gray */
+  --color-border: oklch(0.85 0.01 260); /* Light Border */
+  --color-surface: oklch(0.95 0.01 85); /* Light Surface */
   
   font-family: var(--font-body);
   line-height: 1.6;
@@ -26,13 +29,46 @@
   -moz-osx-font-smoothing: grayscale;
   
   /* Touch optimization */
-  -webkit-tap-highlight-color: rgba(79, 70, 229, 0.2);
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  
+  /* Theme transition */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark Theme Colors - from PRD */
+[data-theme='dark'] {
+  --color-primary: oklch(0.55 0.10 160); /* Lighter Forest Green */
+  --color-primary-dark: oklch(0.50 0.10 160); /* Medium Forest Green */
+  --color-secondary: oklch(0.68 0.13 37); /* Warm Terracotta (brighter) */
+  --color-accent: oklch(0.72 0.18 28); /* Bright Coral */
+  --color-sage: oklch(0.35 0.04 150); /* Muted Sage */
+  --color-background: oklch(0.15 0.01 260); /* Deep Charcoal */
+  --color-text: oklch(0.95 0.01 85); /* Light Cream */
+  --color-text-secondary: oklch(0.65 0.01 260); /* Light Gray */
+  --color-border: oklch(0.25 0.01 260); /* Dark Border */
+  --color-surface: oklch(0.20 0.01 260); /* Dark Surface */
 }
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+/* Smooth theme transitions for specific properties */
+body,
+header,
+main,
+button,
+input,
+textarea,
+select,
+.feature-card,
+.budget-header,
+.theme-toggle {
+  transition: background-color 0.3s ease, 
+              color 0.3s ease, 
+              border-color 0.3s ease;
 }
 
 body {
@@ -96,17 +132,6 @@ a:hover {
 .touch-target {
   -webkit-user-select: none;
   user-select: none;
-}
-
-/* Support for dark mode */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-background: #111827;
-    --color-text: #F9FAFB;
-    --color-text-secondary: #9CA3AF;
-    --color-border: #374151;
-    --color-surface: #1F2937;
-  }
 }
 
 /* Ensure proper scaling on mobile */

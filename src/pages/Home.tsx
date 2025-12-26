@@ -1,9 +1,11 @@
 import { BudgetHeader } from '../components/BudgetHeader';
+import { ThemeToggle } from '../components/ThemeToggle';
 import './Home.css';
 
 export function Home() {
   return (
     <div className="home">
+      <ThemeToggle />
       <BudgetHeader />
       <main className="main-content">
         <div className="welcome-section">
