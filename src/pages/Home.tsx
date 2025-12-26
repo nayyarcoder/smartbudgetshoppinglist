@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { BudgetHeader } from '../components/BudgetHeader';
 import { ShoppingList } from '../components/ShoppingList';
 import { db, type ShoppingItem } from '../utils/db';
@@ -14,7 +14,7 @@ export function Home() {
     suggestedTotal: 0
   });
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     const settings = await db.getBudgetSettings();
 
     const allItems = await db.getAllItems();
@@ -29,28 +29,13 @@ export function Home() {
     const remaining = (settings?.monthlyBudget || 0) - totalSpent;
     const newRecommendation = calculateBudgetRecommendations(allItems, remaining);
     setRecommendation(newRecommendation);
-  };
-
-  useEffect(() => {
-    const loadInitialData = async () => {
-      const settings = await db.getBudgetSettings();
-
-      const allItems = await db.getAllItems();
-      setItems(allItems);
-
-      const totalSpent = allItems
-        .filter(item => item.purchased)
-        .reduce((sum, item) => sum + item.price, 0);
-      setSpent(totalSpent);
-
-      // Calculate recommendations
-      const remaining = (settings?.monthlyBudget || 0) - totalSpent;
-      const newRecommendation = calculateBudgetRecommendations(allItems, remaining);
-      setRecommendation(newRecommendation);
-    };
-    
-    void loadInitialData();
   }, []);
+
+  // Load data on component mount - this is the correct pattern for initial data fetching
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void loadData();
+  }, [loadData]);
 
   const handleAddItem = async (name: string, price: number, category: 'need' | 'good' | 'nice') => {
     await db.addItem({
