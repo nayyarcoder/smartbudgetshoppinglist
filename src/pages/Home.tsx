@@ -1,13 +1,18 @@
 import { BudgetHeader } from '../components/BudgetHeader';
 import { ShoppingList } from '../components/ShoppingList';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import './Home.css';
 
 export function Home() {
   return (
     <div className="home">
-      <BudgetHeader />
+      <ErrorBoundary>
+        <BudgetHeader />
+      </ErrorBoundary>
       <main className="main-content">
-        <ShoppingList />
+        <ErrorBoundary>
+          <ShoppingList />
+        </ErrorBoundary>
       </main>
     </div>
   );
