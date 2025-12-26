@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { db, type ShoppingItem } from '../utils/db';
 import './ShoppingList.css';
 
@@ -33,14 +33,18 @@ export function ShoppingList() {
   const [addingToCategory, setAddingToCategory] = useState<CategoryType | null>(null);
   const [addForm, setAddForm] = useState({ name: '', price: '' });
 
-  const loadItems = useCallback(async () => {
+  const loadItems = async () => {
     const allItems = await db.getAllItems();
     setItems(allItems);
-  }, []);
+  };
 
   useEffect(() => {
-    void loadItems();
-  }, [loadItems]);
+    const fetchItems = async () => {
+      const allItems = await db.getAllItems();
+      setItems(allItems);
+    };
+    void fetchItems();
+  }, []);
 
   // Sort items within each category by manual order or price
   const sortItemsInCategory = (categoryItems: ShoppingItem[]): ShoppingItem[] => {
@@ -223,6 +227,8 @@ export function ShoppingList() {
         onDragEnd={handleDragEnd}
         onDragOver={(e) => handleDragOver(e, item)}
         onDrop={(e) => handleDrop(e, item)}
+        role="listitem"
+        aria-label={`${item.name}, $${item.price.toFixed(2)}`}
       >
         {!isEditing && (
           <div className="drag-handle" title="Drag to reorder">
@@ -283,6 +289,7 @@ export function ShoppingList() {
                   onClick={() => handleTogglePurchased(item)}
                   className="btn-icon"
                   title="Mark as purchased"
+                  aria-label="Mark as purchased"
                 >
                   ✓
                 </button>
@@ -290,6 +297,7 @@ export function ShoppingList() {
                   onClick={() => handleEditItem(item)}
                   className="btn-icon"
                   title="Edit item"
+                  aria-label="Edit item"
                 >
                   ✎
                 </button>
@@ -297,6 +305,7 @@ export function ShoppingList() {
                   onClick={() => handleDeleteItem(item.id)}
                   className="btn-icon btn-delete"
                   title="Delete item"
+                  aria-label="Delete item"
                 >
                   🗑
                 </button>
@@ -325,7 +334,7 @@ export function ShoppingList() {
             <p>No items yet. Add your first {info.label.toLowerCase()} item!</p>
           </div>
         ) : (
-          <div className="items-list">
+          <div className="items-list" role="list" aria-label={`${info.label} items`}>
             {categoryItems.map(renderItem)}
           </div>
         )}
