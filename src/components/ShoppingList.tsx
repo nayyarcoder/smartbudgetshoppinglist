@@ -27,12 +27,12 @@ export function ShoppingList() {
   const [newItemCategory, setNewItemCategory] = useState<Category>('need');
 
   useEffect(() => {
-    const loadItems = async () => {
+    const loadInitialItems = async () => {
       const allItems = await db.getAllItems();
       setItems(allItems.sort((a, b) => a.order - b.order));
     };
     
-    void loadItems();
+    void loadInitialItems();
   }, []);
 
   const loadItems = async () => {

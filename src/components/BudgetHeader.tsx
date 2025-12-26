@@ -24,10 +24,11 @@ export function BudgetHeader() {
 
     void loadBudgetData();
     
-    // Poll for updates every 2 seconds to keep budget in sync
+    // Poll for updates every 5 seconds to keep budget in sync
+    // This is a simple solution; a more efficient approach would use custom events
     const interval = setInterval(() => {
       void loadBudgetData();
-    }, 2000);
+    }, 5000);
     
     return () => clearInterval(interval);
   }, []);
