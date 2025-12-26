@@ -1,0 +1,153 @@
+.budget-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.budget-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.budget-title {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem 0;
+  letter-spacing: -0.02em;
+}
+
+.budget-info {
+  margin-bottom: 0.75rem;
+}
+
+.budget-display {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.budget-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+  font-family: var(--font-body);
+}
+
+.budget-label {
+  font-size: 0.875rem;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.budget-value {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.budget-value.spent {
+  color: #FCD34D;
+}
+
+.budget-value.over-budget {
+  color: #FCA5A5;
+  font-weight: 700;
+}
+
+.budget-bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.budget-bar-fill {
+  height: 100%;
+  background: #10B981;
+  transition: width 0.3s ease, background-color 0.3s ease;
+  border-radius: 4px;
+}
+
+.budget-bar-fill.over-budget {
+  background: #EF4444;
+}
+
+.budget-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.budget-edit label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.budget-input {
+  padding: 0.5rem;
+  border: 2px solid white;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: var(--font-mono);
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--color-text);
+  width: 100%;
+}
+
+.budget-edit button {
+  padding: 0.625rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.875rem;
+  min-height: 44px;
+  transition: opacity 0.2s;
+}
+
+.btn-save {
+  background: white;
+  color: var(--color-primary);
+}
+
+.btn-cancel {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.budget-edit button:active {
+  opacity: 0.8;
+}
+
+/* Mobile optimizations */
+@media (min-width: 640px) {
+  .budget-header {
+    padding: 1.5rem;
+  }
+
+  .budget-title {
+    font-size: 2rem;
+  }
+
+  .budget-edit {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .budget-input {
+    max-width: 200px;
+  }
+
+  .budget-edit button {
+    width: auto;
+  }
+}
