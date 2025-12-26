@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { db } from '../utils/db';
+import { ProgressBar } from './ui';
 import './BudgetHeader.css';
 
 export function BudgetHeader() {
@@ -40,7 +41,6 @@ export function BudgetHeader() {
   };
 
   const remaining = monthlyBudget - spent;
-  const percentUsed = monthlyBudget > 0 ? (spent / monthlyBudget) * 100 : 0;
 
   return (
     <header className="budget-header">
@@ -90,12 +90,12 @@ export function BudgetHeader() {
           )}
         </div>
 
-        <div className="budget-bar">
-          <div
-            className={`budget-bar-fill ${percentUsed > 100 ? 'over-budget' : ''}`}
-            style={{ width: `${Math.min(percentUsed, 100)}%` }}
-          />
-        </div>
+        <ProgressBar
+          value={spent}
+          max={monthlyBudget}
+          gradient={true}
+          animated={true}
+        />
       </div>
     </header>
   );

@@ -1,0 +1,154 @@
+.item-card {
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out);
+  cursor: grab;
+  touch-action: none;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  min-height: 56px;
+}
+
+.item-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.item-card:active {
+  cursor: grabbing;
+  transform: scale(0.98);
+}
+
+/* Priority variants with left border accent */
+.item-card--need {
+  border-left: 4px solid var(--color-need);
+}
+
+.item-card--good {
+  border-left: 4px solid var(--color-good);
+}
+
+.item-card--nice {
+  border-left: 4px solid var(--color-nice);
+}
+
+/* Dragging state */
+.item-card--dragging {
+  opacity: 0.5;
+  transform: scale(1.02) rotate(2deg);
+  box-shadow: var(--shadow-xl);
+  cursor: grabbing;
+  z-index: 1000;
+}
+
+/* Drag Handle */
+.drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  color: var(--color-text-muted);
+  transition: color var(--duration-fast) var(--ease-out);
+  padding: var(--spacing-xs);
+  margin: calc(-1 * var(--spacing-xs));
+  min-width: 44px;
+  min-height: 44px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.drag-handle:hover {
+  color: var(--color-text);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Badge Component */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: var(--font-body);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.badge--default {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.badge--need {
+  background: var(--color-need);
+  color: var(--color-surface-elevated);
+}
+
+.badge--good {
+  background: var(--color-good);
+  color: var(--color-surface-elevated);
+}
+
+.badge--nice {
+  background: var(--color-nice);
+  color: var(--color-text);
+}
+
+/* Ensure touch targets meet 44px minimum */
+@media (max-width: 768px) {
+  .item-card {
+    min-height: 64px;
+  }
+  
+  .drag-handle {
+    min-width: 48px;
+    min-height: 48px;
+  }
+}
+
+/* Animation for adding new items */
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.item-card.item-card--entering {
+  animation: slideInFromTop var(--duration-base) var(--ease-spring);
+}
+
+/* Animation for removing items */
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+.item-card.item-card--exiting {
+  animation: fadeOut var(--duration-base) var(--ease-in);
+}

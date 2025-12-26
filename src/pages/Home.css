@@ -2,11 +2,12 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  padding-bottom: calc(64px + var(--spacing-2xl));
 }
 
 .main-content {
   flex: 1;
-  padding: 1.5rem 1rem;
+  padding: var(--spacing-xl) var(--spacing-lg);
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
@@ -14,6 +15,7 @@
 
 .welcome-section {
   text-align: center;
+  margin-bottom: var(--spacing-2xl);
 }
 
 .welcome-section h2 {
@@ -21,97 +23,87 @@
   font-size: 1.75rem;
   font-weight: 700;
   color: var(--color-text);
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--spacing-sm);
   line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .welcome-section > p {
   font-size: 1rem;
   color: var(--color-text-secondary);
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-2xl);
 }
 
-.feature-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-  margin-bottom: 2rem;
+/* Component Demo Sections */
+.components-demo {
   text-align: left;
+  margin-bottom: var(--spacing-2xl);
 }
 
-.feature-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 1.5rem;
-  transition: transform 0.2s, box-shadow 0.2s;
+/* Item Card Content Layout */
+.item-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  gap: var(--spacing-md);
 }
 
-.feature-card:active {
-  transform: scale(0.98);
+.item-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex: 1;
 }
 
-.feature-icon {
-  font-size: 2.5rem;
-  margin-bottom: 0.75rem;
+.item-name {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-text);
+  margin: 0;
 }
 
-.feature-card h3 {
+.item-price {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* Button Demo */
+.button-demo {
+  margin: var(--spacing-2xl) 0;
+  text-align: center;
+}
+
+.button-demo h3 {
   font-family: var(--font-display);
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--color-text);
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--spacing-lg);
 }
 
-.feature-card p {
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
-  line-height: 1.5;
-  margin: 0;
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-md);
+  max-width: 800px;
+  margin: 0 auto;
 }
 
-.cta-section {
-  margin-top: 2rem;
-}
-
-.cta-button {
-  background: var(--color-primary);
-  color: white;
-  border: none;
-  padding: 1rem 2rem;
-  font-size: 1.125rem;
-  font-weight: 600;
-  border-radius: 12px;
-  cursor: pointer;
-  min-height: 52px;
-  font-family: var(--font-display);
-  transition: background-color 0.2s, transform 0.1s;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-}
-
-.cta-button:hover {
-  background: var(--color-primary-dark);
-}
-
-.cta-button:active {
-  transform: scale(0.97);
-}
-
-.install-hint {
-  margin-top: 1.5rem;
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
-  padding: 0.75rem;
-  background: var(--color-surface);
-  border-radius: 8px;
-  border: 1px solid var(--color-border);
+/* Dialog Form */
+.dialog-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
 }
 
 /* Tablet and desktop */
 @media (min-width: 640px) {
   .main-content {
-    padding: 2rem 1.5rem;
+    padding: var(--spacing-2xl) var(--spacing-xl);
   }
 
   .welcome-section h2 {
@@ -121,20 +113,10 @@
   .welcome-section > p {
     font-size: 1.125rem;
   }
-
-  .feature-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-  }
-
-  .feature-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
-  }
 }
 
 @media (min-width: 1024px) {
-  .feature-grid {
+  .button-grid {
     grid-template-columns: repeat(4, 1fr);
   }
 }
