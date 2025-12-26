@@ -1,0 +1,404 @@
+.shopping-list {
+  padding: 1rem;
+  max-width: 800px;
+  margin: 0 auto;
+  padding-bottom: 4rem;
+}
+
+/* Category Section */
+.category-section {
+  margin-bottom: 2rem;
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+}
+
+.category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-left: 0.75rem;
+  border-left: 4px solid;
+}
+
+.category-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.category-count {
+  background: var(--color-border);
+  color: var(--color-text-secondary);
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* Empty State */
+.empty-category {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+/* Items List */
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Item Card */
+.item-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  cursor: grab;
+  touch-action: none;
+  position: relative;
+}
+
+.item-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.item-card:active {
+  cursor: grabbing;
+}
+
+.item-card.dragging {
+  opacity: 0.5;
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  cursor: grabbing;
+}
+
+/* Drag Handle */
+.drag-handle {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  cursor: grab;
+  touch-action: none;
+  padding: 2px;
+}
+
+.drag-handle:hover {
+  color: var(--color-text);
+}
+
+.drag-handle svg {
+  pointer-events: none;
+}
+
+.item-card:active .drag-handle {
+  cursor: grabbing;
+}
+
+/* Item Content */
+.item-content {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.item-info {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.item-name {
+  font-size: 1rem;
+  color: var(--color-text);
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.item-price {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--color-primary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Item Actions */
+.item-actions {
+  display: flex;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.btn-icon {
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
+  color: var(--color-text-secondary);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-icon:hover {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-text-secondary);
+}
+
+.btn-icon:active {
+  transform: scale(0.95);
+}
+
+.btn-delete:hover {
+  background: #FEE2E2;
+  color: #DC2626;
+  border-color: #DC2626;
+}
+
+/* Item Edit Form */
+.item-edit-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.item-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: var(--font-body);
+  background: var(--color-background);
+  color: var(--color-text);
+}
+
+.item-input:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 0;
+}
+
+.item-price-input {
+  font-family: var(--font-mono);
+}
+
+.item-edit-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Add Item Form */
+.add-item-form {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--color-background);
+  border: 1px dashed var(--color-border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.add-item-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Buttons */
+.btn-add-item {
+  margin-top: 1rem;
+  width: 100%;
+  padding: 0.75rem;
+  background: transparent;
+  border: 2px dashed var(--color-border);
+  color: var(--color-text-secondary);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  min-height: 44px;
+}
+
+.btn-add-item:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: transparent;
+}
+
+.btn-save {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  min-height: 44px;
+}
+
+.btn-save:hover {
+  background: var(--color-primary-dark);
+}
+
+.btn-cancel {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 44px;
+}
+
+.btn-cancel:hover {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+/* Undo Toast */
+.undo-toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-text);
+  color: var(--color-background);
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  z-index: 1000;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateX(-50%) translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+.btn-undo {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 36px;
+  transition: background-color 0.2s;
+}
+
+.btn-undo:hover {
+  background: var(--color-primary-dark);
+}
+
+/* Responsive Design */
+@media (min-width: 640px) {
+  .shopping-list {
+    padding: 1.5rem;
+  }
+
+  .category-section {
+    padding: 1.5rem;
+  }
+
+  .item-card {
+    padding: 1rem;
+  }
+
+  .item-name {
+    font-size: 1.0625rem;
+  }
+
+  .add-item-form {
+    flex-direction: row;
+    align-items: flex-end;
+  }
+
+  .add-item-actions {
+    flex-shrink: 0;
+  }
+
+  .item-edit-form {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .item-edit-actions {
+    flex-shrink: 0;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .item-card.dragging {
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+  }
+
+  .btn-delete:hover {
+    background: #7F1D1D;
+    color: #FCA5A5;
+    border-color: #FCA5A5;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .item-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .btn-icon {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .drag-handle {
+    width: 32px;
+    height: 32px;
+  }
+}

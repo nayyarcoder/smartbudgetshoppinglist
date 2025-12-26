@@ -7,6 +7,7 @@ interface ShoppingItem {
   category: 'need' | 'good' | 'nice';
   purchased: boolean;
   order: number;
+  manualOrder: number | null; // null means use price-based sorting
   createdAt: number;
   updatedAt: number;
 }
@@ -67,6 +68,7 @@ class DatabaseManager {
     await db.add('items', {
       ...item,
       id,
+      manualOrder: item.manualOrder ?? null,
       createdAt: now,
       updatedAt: now,
     });
@@ -94,9 +96,15 @@ class DatabaseManager {
     const item = await db.get('items', id);
     
     if (item) {
+      // Reset manual order if price changes
+      const newUpdates = { ...updates };
+      if (updates.price !== undefined && updates.price !== item.price) {
+        newUpdates.manualOrder = null;
+      }
+      
       await db.put('items', {
         ...item,
-        ...updates,
+        ...newUpdates,
         id,
         updatedAt: Date.now(),
       });
