@@ -23,6 +23,16 @@ export function BudgetHeader() {
     };
 
     void loadBudgetData();
+
+    // Listen for budget updates from purchases
+    const handleBudgetUpdate = () => {
+      void loadBudgetData();
+    };
+
+    window.addEventListener('budgetUpdate', handleBudgetUpdate);
+    return () => {
+      window.removeEventListener('budgetUpdate', handleBudgetUpdate);
+    };
   }, []);
 
   const handleSaveBudget = async () => {
