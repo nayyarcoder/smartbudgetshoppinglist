@@ -23,6 +23,13 @@ export function BudgetHeader() {
     };
 
     void loadBudgetData();
+    
+    // Poll for updates every 2 seconds to keep budget in sync
+    const interval = setInterval(() => {
+      void loadBudgetData();
+    }, 2000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const handleSaveBudget = async () => {
