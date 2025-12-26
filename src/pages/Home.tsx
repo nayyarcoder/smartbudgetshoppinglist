@@ -1,48 +1,97 @@
+import { useState, useEffect } from 'react';
 import { BudgetHeader } from '../components/BudgetHeader';
+import { ShoppingList } from '../components/ShoppingList';
+import { db, type ShoppingItem } from '../utils/db';
+import { calculateBudgetRecommendations, type BudgetRecommendation } from '../utils/budgetRecommendations';
 import './Home.css';
 
 export function Home() {
+  const [items, setItems] = useState<ShoppingItem[]>([]);
+  const [spent, setSpent] = useState<number>(0);
+  const [recommendation, setRecommendation] = useState<BudgetRecommendation>({
+    affordableItems: [],
+    unaffordableItems: [],
+    suggestedTotal: 0
+  });
+
+  const loadData = async () => {
+    const settings = await db.getBudgetSettings();
+
+    const allItems = await db.getAllItems();
+    setItems(allItems);
+
+    const totalSpent = allItems
+      .filter(item => item.purchased)
+      .reduce((sum, item) => sum + item.price, 0);
+    setSpent(totalSpent);
+
+    // Calculate recommendations
+    const remaining = (settings?.monthlyBudget || 0) - totalSpent;
+    const newRecommendation = calculateBudgetRecommendations(allItems, remaining);
+    setRecommendation(newRecommendation);
+  };
+
+  useEffect(() => {
+    const loadInitialData = async () => {
+      const settings = await db.getBudgetSettings();
+
+      const allItems = await db.getAllItems();
+      setItems(allItems);
+
+      const totalSpent = allItems
+        .filter(item => item.purchased)
+        .reduce((sum, item) => sum + item.price, 0);
+      setSpent(totalSpent);
+
+      // Calculate recommendations
+      const remaining = (settings?.monthlyBudget || 0) - totalSpent;
+      const newRecommendation = calculateBudgetRecommendations(allItems, remaining);
+      setRecommendation(newRecommendation);
+    };
+    
+    void loadInitialData();
+  }, []);
+
+  const handleAddItem = async (name: string, price: number, category: 'need' | 'good' | 'nice') => {
+    await db.addItem({
+      name,
+      price,
+      category,
+      purchased: false,
+      order: 0
+    });
+    await loadData();
+  };
+
+  const handleTogglePurchased = async (id: string, purchased: boolean) => {
+    await db.updateItem(id, { purchased });
+    await loadData();
+  };
+
+  const handleDeleteItem = async (id: string) => {
+    await db.deleteItem(id);
+    await loadData();
+  };
+
+  const handleBudgetChange = async () => {
+    await loadData();
+  };
+
   return (
     <div className="home">
-      <BudgetHeader />
+      <BudgetHeader 
+        suggestedTotal={recommendation.suggestedTotal}
+        spent={spent}
+        onBudgetChange={handleBudgetChange}
+      />
       <main className="main-content">
-        <div className="welcome-section">
-          <h2>Welcome to Smart Budget Shopping List</h2>
-          <p>Your intelligent shopping companion with prioritized budgeting</p>
-          
-          <div className="feature-grid">
-            <div className="feature-card">
-              <div className="feature-icon">📝</div>
-              <h3>Organize Items</h3>
-              <p>Categorize items as need to have, good to have, or nice to have</p>
-            </div>
-            
-            <div className="feature-card">
-              <div className="feature-icon">💰</div>
-              <h3>Track Budget</h3>
-              <p>Set your monthly budget and track spending in real-time</p>
-            </div>
-            
-            <div className="feature-card">
-              <div className="feature-icon">✅</div>
-              <h3>Mark Purchases</h3>
-              <p>Check off items as you buy them and see your budget adjust</p>
-            </div>
-            
-            <div className="feature-card">
-              <div className="feature-icon">📱</div>
-              <h3>Works Offline</h3>
-              <p>All data stored locally on your device, works without internet</p>
-            </div>
-          </div>
-          
-          <div className="cta-section">
-            <button className="cta-button">Get Started</button>
-            <p className="install-hint">
-              💡 Tip: Install this app to your home screen for the best experience
-            </p>
-          </div>
-        </div>
+        <ShoppingList
+          items={items}
+          recommendation={recommendation}
+          onAddItem={handleAddItem}
+          onTogglePurchased={handleTogglePurchased}
+          onDeleteItem={handleDeleteItem}
+        />
       </main>
     </div>
   );
