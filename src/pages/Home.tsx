@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { BudgetHeader } from '../components/BudgetHeader';
 import { ShoppingList } from '../components/ShoppingList';
+import { ItemForm } from '../components/ItemForm';
 import { db, type ShoppingItem } from '../utils/db';
 import { calculateBudgetRecommendations, type BudgetRecommendation } from '../utils/budgetRecommendations';
 import './Home.css';
@@ -13,6 +14,7 @@ export function Home() {
     unaffordableItems: [],
     suggestedTotal: 0
   });
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const loadData = useCallback(async () => {
     const settings = await db.getBudgetSettings();
@@ -37,25 +39,11 @@ export function Home() {
     void loadData();
   }, [loadData]);
 
-  const handleAddItem = async (name: string, price: number, category: 'need' | 'good' | 'nice') => {
-    await db.addItem({
-      name,
-      price,
-      category,
-      purchased: false,
-      order: 0
-    });
-    await loadData();
-  };
-
-  const handleTogglePurchased = async (id: string, purchased: boolean) => {
-    await db.updateItem(id, { purchased });
-    await loadData();
-  };
-
-  const handleDeleteItem = async (id: string) => {
-    await db.deleteItem(id);
-    await loadData();
+  const handleItemAdded = () => {
+    // Force ShoppingList to refresh
+    setRefreshKey(prev => prev + 1);
+    // Reload data to update recommendations
+    void loadData();
   };
 
   const handleBudgetChange = async () => {
@@ -70,14 +58,14 @@ export function Home() {
         onBudgetChange={handleBudgetChange}
       />
       <main className="main-content">
-        <ShoppingList
+        <ShoppingList 
+          key={refreshKey}
           items={items}
           recommendation={recommendation}
-          onAddItem={handleAddItem}
-          onTogglePurchased={handleTogglePurchased}
-          onDeleteItem={handleDeleteItem}
+          onDataChange={loadData}
         />
       </main>
+      <ItemForm onItemAdded={handleItemAdded} />
     </div>
   );
 }

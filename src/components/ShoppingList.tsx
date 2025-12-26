@@ -1,111 +1,116 @@
-import { useState } from 'react';
-import type { ShoppingItem as ShoppingItemType } from '../utils/db';
-import { ShoppingItem } from './ShoppingItem';
+import { useState, useEffect } from 'react';
+import { db, type ShoppingItem } from '../utils/db';
 import type { BudgetRecommendation } from '../utils/budgetRecommendations';
 import './ShoppingList.css';
 
 interface ShoppingListProps {
-  items: ShoppingItemType[];
+  items: ShoppingItem[];
   recommendation: BudgetRecommendation;
-  onAddItem: (name: string, price: number, category: 'need' | 'good' | 'nice') => void;
-  onTogglePurchased: (id: string, purchased: boolean) => void;
-  onDeleteItem: (id: string) => void;
+  onDataChange: () => void;
 }
 
-export function ShoppingList({ 
-  items, 
-  recommendation, 
-  onAddItem, 
-  onTogglePurchased, 
-  onDeleteItem 
-}: ShoppingListProps) {
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [newItemName, setNewItemName] = useState('');
-  const [newItemPrice, setNewItemPrice] = useState('');
-  const [newItemCategory, setNewItemCategory] = useState<'need' | 'good' | 'nice'>('need');
+interface PurchasedItem extends ShoppingItem {
+  purchasedAt: number;
+}
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+const PURCHASE_ANIMATION_DURATION = 300;
+const UNDO_TIMEOUT_MS = 5000;
+
+export function ShoppingList({ items: propItems, recommendation, onDataChange }: ShoppingListProps) {
+  const [items, setItems] = useState<ShoppingItem[]>([]);
+  const [purchasingItem, setPurchasingItem] = useState<string | null>(null);
+  const [undoItem, setUndoItem] = useState<PurchasedItem | null>(null);
+  const [showUndo, setShowUndo] = useState(false);
+
+  useEffect(() => {
+    // Only show unpurchased items
+    const unpurchased = propItems.filter(item => !item.purchased);
+    setItems(unpurchased.sort((a, b) => {
+      // Sort by category priority, then by order
+      const categoryOrder = { need: 0, good: 1, nice: 2 };
+      if (categoryOrder[a.category] !== categoryOrder[b.category]) {
+        return categoryOrder[a.category] - categoryOrder[b.category];
+      }
+      return a.order - b.order;
+    }));
+  }, [propItems]);
+
+  const handlePurchase = async (item: ShoppingItem) => {
+    // Start fade-out animation
+    setPurchasingItem(item.id);
+
+    // Wait for animation to complete
+    setTimeout(async () => {
+      // Mark as purchased in database
+      await db.updateItem(item.id, { purchased: true });
+      
+      // Remove from list
+      setItems(prev => prev.filter(i => i.id !== item.id));
+      setPurchasingItem(null);
+
+      // Show undo toast
+      const purchasedItem: PurchasedItem = {
+        ...item,
+        purchased: true,
+        purchasedAt: Date.now()
+      };
+      setUndoItem(purchasedItem);
+      setShowUndo(true);
+
+      // Trigger data reload
+      onDataChange();
+
+      // Auto-hide undo after timeout
+      setTimeout(() => {
+        setShowUndo(false);
+        setUndoItem(null);
+      }, UNDO_TIMEOUT_MS);
+    }, PURCHASE_ANIMATION_DURATION);
+  };
+
+  const handleUndo = async () => {
+    if (!undoItem) return;
+
+    // Mark as unpurchased
+    await db.updateItem(undoItem.id, { purchased: false });
     
-    const price = parseFloat(newItemPrice);
-    if (!newItemName.trim() || isNaN(price) || price <= 0) {
-      alert('Please enter a valid item name and price');
-      return;
+    // Hide undo toast
+    setShowUndo(false);
+    
+    // Trigger data reload
+    onDataChange();
+    
+    setUndoItem(null);
+  };
+
+  const handleDismissUndo = () => {
+    setShowUndo(false);
+    setUndoItem(null);
+  };
+
+  const getCategoryLabel = (category: string) => {
+    switch (category) {
+      case 'need': return 'Need to Have';
+      case 'good': return 'Good to Have';
+      case 'nice': return 'Nice to Have';
+      default: return category;
     }
-
-    onAddItem(newItemName.trim(), price, newItemCategory);
-    
-    // Reset form
-    setNewItemName('');
-    setNewItemPrice('');
-    setNewItemCategory('need');
-    setShowAddForm(false);
   };
 
-  const handleCancel = () => {
-    setNewItemName('');
-    setNewItemPrice('');
-    setNewItemCategory('need');
-    setShowAddForm(false);
-  };
-
-  // Organize items by category
-  const needItems = items.filter(item => item.category === 'need' && !item.purchased);
-  const goodItems = items.filter(item => item.category === 'good' && !item.purchased);
-  const niceItems = items.filter(item => item.category === 'nice' && !item.purchased);
-
-  const isItemAffordable = (item: ShoppingItemType) => {
+  const isItemAffordable = (item: ShoppingItem) => {
     return recommendation.affordableItems.some(i => i.id === item.id);
   };
 
-  const renderCategorySection = (
-    title: string,
-    icon: string,
-    categoryItems: ShoppingItemType[],
-    categoryType: 'need' | 'good' | 'nice'
-  ) => {
-    if (categoryItems.length === 0) {
-      return (
-        <div className="category-section" key={categoryType}>
-          <div className="category-header">
-            <h2 className="category-title">
-              <span className="category-icon">{icon}</span>
-              {title}
-            </h2>
-            <span className="category-count">0 items</span>
-          </div>
-          <div className="empty-category">
-            No {title.toLowerCase()} items yet
-          </div>
-        </div>
-      );
+  const groupedItems = items.reduce((acc, item) => {
+    if (!acc[item.category]) {
+      acc[item.category] = [];
     }
+    acc[item.category].push(item);
+    return acc;
+  }, {} as Record<string, ShoppingItem[]>);
 
-    return (
-      <div className="category-section" key={categoryType}>
-        <div className="category-header">
-          <h2 className="category-title">
-            <span className="category-icon">{icon}</span>
-            {title}
-          </h2>
-          <span className="category-count">{categoryItems.length} items</span>
-        </div>
-        <div className="items-container">
-          {categoryItems.map(item => (
-            <ShoppingItem
-              key={item.id}
-              item={item}
-              isAffordable={isItemAffordable(item)}
-              onTogglePurchased={onTogglePurchased}
-              onDelete={onDeleteItem}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const totalUnpurchased = needItems.length + goodItems.length + niceItems.length;
+  const categories = ['need', 'good', 'nice'] as const;
+  const totalUnpurchased = items.length;
   const affordableCount = recommendation.affordableItems.length;
   const unaffordableCount = recommendation.unaffordableItems.length;
 
@@ -138,70 +143,72 @@ export function ShoppingList({
         </div>
       )}
 
-      {/* Category Sections */}
-      {renderCategorySection('Need to Have', '🔴', needItems, 'need')}
-      {renderCategorySection('Good to Have', '🟠', goodItems, 'good')}
-      {renderCategorySection('Nice to Have', '🔵', niceItems, 'nice')}
+      {categories.map(category => (
+        <div key={category} className="category-section">
+          <h2 className={`category-header category-${category}`}>
+            {getCategoryLabel(category)}
+            <span className="item-count">
+              {groupedItems[category]?.length || 0}
+            </span>
+          </h2>
+          
+          <div className="items-container">
+            {groupedItems[category]?.length > 0 ? (
+              groupedItems[category].map(item => {
+                const affordable = isItemAffordable(item);
+                return (
+                  <div
+                    key={item.id}
+                    className={`item-card ${purchasingItem === item.id ? 'purchasing' : ''} ${affordable ? 'affordable' : 'unaffordable'}`}
+                  >
+                    <button
+                      className="purchase-button"
+                      onClick={() => handlePurchase(item)}
+                      aria-label="Mark as purchased"
+                      disabled={purchasingItem === item.id}
+                    >
+                      <span className="checkbox-icon">
+                        {purchasingItem === item.id ? '✓' : ''}
+                      </span>
+                    </button>
+                    
+                    <div className="item-content">
+                      <div className="item-name">{item.name}</div>
+                      <div className="item-price">${item.price.toFixed(2)}</div>
+                    </div>
 
-      {/* Add Item Section */}
-      <div className="add-item-section">
-        {!showAddForm ? (
-          <button 
-            className="add-item-button"
-            onClick={() => setShowAddForm(true)}
-          >
-            <span>+</span>
-            Add New Item
-          </button>
-        ) : (
-          <form className="add-item-form" onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="item-name">Item Name</label>
-              <input
-                id="item-name"
-                type="text"
-                value={newItemName}
-                onChange={(e) => setNewItemName(e.target.value)}
-                placeholder="e.g., Milk, Bread, Laptop"
-                autoFocus
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="item-price">Price ($)</label>
-              <input
-                id="item-price"
-                type="number"
-                step="0.01"
-                min="0.01"
-                value={newItemPrice}
-                onChange={(e) => setNewItemPrice(e.target.value)}
-                placeholder="0.00"
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="item-category">Priority</label>
-              <select
-                id="item-category"
-                value={newItemCategory}
-                onChange={(e) => setNewItemCategory(e.target.value as 'need' | 'good' | 'nice')}
-              >
-                <option value="need">Need to Have</option>
-                <option value="good">Good to Have</option>
-                <option value="nice">Nice to Have</option>
-              </select>
-            </div>
-            
-            <div className="form-actions">
-              <button type="submit">Add Item</button>
-              <button type="button" className="btn-cancel" onClick={handleCancel}>
-                Cancel
+                    <div className="affordability-indicator">
+                      {affordable ? '✓' : '⚠️'}
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="empty-state">
+                <p>No {category} items yet</p>
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+
+      {showUndo && undoItem && (
+        <div className="undo-toast">
+          <div className="undo-content">
+            <span className="undo-message">
+              {undoItem.name} purchased
+            </span>
+            <div className="undo-actions">
+              <button className="undo-button" onClick={handleUndo}>
+                Undo
+              </button>
+              <button className="dismiss-button" onClick={handleDismissUndo} aria-label="Dismiss">
+                ✕
               </button>
             </div>
-          </form>
-        )}
-      </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

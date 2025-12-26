@@ -22,6 +22,16 @@ export function BudgetHeader({ suggestedTotal = 0, spent = 0, onBudgetChange }: 
     };
 
     void loadBudgetData();
+
+    // Listen for budget updates from purchases
+    const handleBudgetUpdate = () => {
+      void loadBudgetData();
+    };
+
+    window.addEventListener('budgetUpdate', handleBudgetUpdate);
+    return () => {
+      window.removeEventListener('budgetUpdate', handleBudgetUpdate);
+    };
   }, []);
 
   const handleSaveBudget = async () => {
