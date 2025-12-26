@@ -54,7 +54,7 @@ export function ShoppingList() {
       });
       setItems(sorted);
     };
-    void loadData();
+    loadData().catch(console.error);
   }, [refreshKey]);
 
   const refreshItems = () => {
@@ -91,7 +91,7 @@ export function ShoppingList() {
   };
 
   const handleDeleteItem = async (id: string) => {
-    if (confirm('Are you sure you want to delete this item?')) {
+    if (window.confirm('Are you sure you want to delete this item?')) {
       await db.deleteItem(id);
       refreshItems();
     }
