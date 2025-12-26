@@ -6,6 +6,9 @@ interface PurchasedItem extends ShoppingItem {
   purchasedAt: number;
 }
 
+const PURCHASE_ANIMATION_DURATION = 300;
+const UNDO_TIMEOUT_MS = 5000;
+
 export function ShoppingList() {
   const [items, setItems] = useState<ShoppingItem[]>([]);
   const [purchasingItem, setPurchasingItem] = useState<string | null>(null);
@@ -28,17 +31,7 @@ export function ShoppingList() {
 
   useEffect(() => {
     const fetchItems = async () => {
-      const allItems = await db.getAllItems();
-      // Only show unpurchased items
-      const unpurchased = allItems.filter(item => !item.purchased);
-      setItems(unpurchased.sort((a, b) => {
-        // Sort by category priority, then by order
-        const categoryOrder = { need: 0, good: 1, nice: 2 };
-        if (categoryOrder[a.category] !== categoryOrder[b.category]) {
-          return categoryOrder[a.category] - categoryOrder[b.category];
-        }
-        return a.order - b.order;
-      }));
+      await loadItems();
     };
     void fetchItems();
   }, []);
@@ -68,12 +61,12 @@ export function ShoppingList() {
       // Trigger budget update in BudgetHeader
       window.dispatchEvent(new CustomEvent('budgetUpdate'));
 
-      // Auto-hide undo after 5 seconds
+      // Auto-hide undo after timeout
       setTimeout(() => {
         setShowUndo(false);
         setUndoItem(null);
-      }, 5000);
-    }, 300);
+      }, UNDO_TIMEOUT_MS);
+    }, PURCHASE_ANIMATION_DURATION);
   };
 
   const handleUndo = async () => {

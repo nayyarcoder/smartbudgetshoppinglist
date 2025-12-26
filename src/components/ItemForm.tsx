@@ -11,6 +11,7 @@ export function ItemForm({ onItemAdded }: ItemFormProps) {
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState<'need' | 'good' | 'nice'>('need');
   const [isExpanded, setIsExpanded] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,9 +20,11 @@ export function ItemForm({ onItemAdded }: ItemFormProps) {
 
     const priceNum = parseFloat(price);
     if (isNaN(priceNum) || priceNum <= 0) {
-      alert('Please enter a valid price');
+      setError('Please enter a valid price greater than 0');
       return;
     }
+
+    setError('');
 
     await db.addItem({
       name: name.trim(),
@@ -70,6 +73,12 @@ export function ItemForm({ onItemAdded }: ItemFormProps) {
         </div>
         
         <form onSubmit={handleSubmit} className="item-form">
+          {error && (
+            <div className="form-error">
+              {error}
+            </div>
+          )}
+          
           <div className="form-group">
             <label htmlFor="item-name">Item Name</label>
             <input
