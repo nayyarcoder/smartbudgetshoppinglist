@@ -154,4 +154,4 @@ class DatabaseManager {
 
 // Export singleton instance
 export const db = new DatabaseManager();
-export type { ShoppingItem, BudgetSettings };
+export type { ShoppingItem, BudgetSettings, ThemeSettings };
