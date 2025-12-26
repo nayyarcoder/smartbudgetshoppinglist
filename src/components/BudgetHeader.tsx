@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { db } from '../utils/db';
 import './BudgetHeader.css';
 
@@ -12,22 +12,28 @@ export function BudgetHeader({ onBudgetUpdate }: BudgetHeaderProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState<string>('');
   const [error, setError] = useState<string>('');
+  
+  // Use ref to track if initial load is done
+  const hasLoadedRef = useRef(false);
 
+  // Load budget data on mount
   useEffect(() => {
-    const loadBudgetData = async () => {
-      const settings = await db.getBudgetSettings();
-      if (settings) {
-        setMonthlyBudget(settings.monthlyBudget);
-      }
+    if (!hasLoadedRef.current) {
+      hasLoadedRef.current = true;
+      
+      db.getBudgetSettings().then(settings => {
+        if (settings) {
+          setMonthlyBudget(settings.monthlyBudget);
+        }
+      });
 
-      const items = await db.getAllItems();
-      const totalSpent = items
-        .filter(item => item.purchased)
-        .reduce((sum, item) => sum + item.price, 0);
-      setSpent(totalSpent);
-    };
-    
-    void loadBudgetData();
+      db.getAllItems().then(items => {
+        const totalSpent = items
+          .filter(item => item.purchased)
+          .reduce((sum, item) => sum + item.price, 0);
+        setSpent(totalSpent);
+      });
+    }
   }, []);
   
   // Expose refresh method for parent components

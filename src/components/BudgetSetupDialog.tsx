@@ -34,6 +34,8 @@ export function BudgetSetupDialog({ onSave, onSkip }: BudgetSetupDialogProps) {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSave();
+    } else if (e.key === 'Escape') {
+      onSkip();
     }
   };
 
