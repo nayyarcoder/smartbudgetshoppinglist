@@ -55,14 +55,20 @@
   padding: 0;
 }
 
-/* Smooth theme transitions for all elements */
-*,
-*::before,
-*::after {
+/* Smooth theme transitions for specific properties */
+body,
+header,
+main,
+button,
+input,
+textarea,
+select,
+.feature-card,
+.budget-header,
+.theme-toggle {
   transition: background-color 0.3s ease, 
               color 0.3s ease, 
-              border-color 0.3s ease, 
-              box-shadow 0.3s ease;
+              border-color 0.3s ease;
 }
 
 body {
