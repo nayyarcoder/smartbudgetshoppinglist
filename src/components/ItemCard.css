@@ -1,0 +1,122 @@
+.item-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s;
+  gap: 1rem;
+}
+
+.item-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.item-card.purchased {
+  opacity: 0.6;
+}
+
+.item-card.purchased .item-name {
+  text-decoration: line-through;
+  color: var(--color-text-secondary);
+}
+
+.item-card-main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.item-checkbox {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  flex-shrink: 0;
+  accent-color: var(--color-primary);
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.item-name {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-text);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-price {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.item-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.btn-icon {
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.2s;
+  font-size: 1.25rem;
+  line-height: 1;
+  min-height: 36px;
+  width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon:hover {
+  background: var(--color-background);
+}
+
+.btn-icon:active {
+  transform: scale(0.95);
+}
+
+.btn-edit:hover {
+  background: oklch(0.45 0.08 160 / 0.1);
+}
+
+.btn-delete:hover {
+  background: oklch(0.68 0.17 25 / 0.1);
+}
+
+/* Touch-friendly spacing on mobile */
+@media screen and (max-width: 640px) {
+  .item-card {
+    padding: 0.875rem;
+  }
+
+  .item-checkbox {
+    width: 28px;
+    height: 28px;
+  }
+
+  .btn-icon {
+    min-height: 44px;
+    width: 44px;
+    font-size: 1.5rem;
+  }
+}
