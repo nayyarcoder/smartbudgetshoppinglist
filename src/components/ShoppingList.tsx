@@ -83,11 +83,6 @@ export function ShoppingList() {
       return null;
     }
     
-    if (price < 0) {
-      setPriceError('Price cannot be negative');
-      return null;
-    }
-    
     setPriceError('');
     return price;
   };
@@ -127,7 +122,8 @@ export function ShoppingList() {
       setItems(items.filter(i => i.id !== item.id));
       setUndoStack([...undoStack, { type: 'delete', item }]);
       setShowUndo(true);
-      setTimeout(() => setShowUndo(false), 5000);
+      const timeoutId = setTimeout(() => setShowUndo(false), 5000);
+      return () => clearTimeout(timeoutId);
     } catch (error) {
       console.error('Failed to delete item:', error);
     }
@@ -140,7 +136,8 @@ export function ShoppingList() {
       setItems(items.map(i => i.id === item.id ? updated : i));
       setUndoStack([...undoStack, { type: 'purchase', item: updated, previousState: item }]);
       setShowUndo(true);
-      setTimeout(() => setShowUndo(false), 5000);
+      const timeoutId = setTimeout(() => setShowUndo(false), 5000);
+      return () => clearTimeout(timeoutId);
     } catch (error) {
       console.error('Failed to update item:', error);
     }
