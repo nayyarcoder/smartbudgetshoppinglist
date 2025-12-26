@@ -17,6 +17,12 @@ interface BudgetSettings {
   updatedAt: number;
 }
 
+interface ThemeSettings {
+  id: string;
+  theme: 'light' | 'dark';
+  updatedAt: number;
+}
+
 interface SmartBudgetDB extends DBSchema {
   items: {
     key: string;
@@ -25,7 +31,7 @@ interface SmartBudgetDB extends DBSchema {
   };
   settings: {
     key: string;
-    value: BudgetSettings;
+    value: BudgetSettings | ThemeSettings;
   };
 }
 
@@ -116,7 +122,8 @@ class DatabaseManager {
   // Budget Settings operations
   async getBudgetSettings(): Promise<BudgetSettings | undefined> {
     const db = await this.init();
-    return db.get('settings', 'budget');
+    const settings = await db.get('settings', 'budget');
+    return settings as BudgetSettings | undefined;
   }
 
   async updateBudgetSettings(monthlyBudget: number): Promise<void> {
@@ -124,6 +131,22 @@ class DatabaseManager {
     await db.put('settings', {
       id: 'budget',
       monthlyBudget,
+      updatedAt: Date.now(),
+    });
+  }
+
+  // Theme Settings operations
+  async getThemePreference(): Promise<'light' | 'dark' | undefined> {
+    const db = await this.init();
+    const settings = await db.get('settings', 'theme') as ThemeSettings | undefined;
+    return settings?.theme;
+  }
+
+  async saveThemePreference(theme: 'light' | 'dark'): Promise<void> {
+    const db = await this.init();
+    await db.put('settings', {
+      id: 'theme',
+      theme,
       updatedAt: Date.now(),
     });
   }
