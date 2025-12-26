@@ -23,6 +23,31 @@
   letter-spacing: -0.02em;
 }
 
+.budget-warning {
+  background: rgba(239, 68, 68, 0.9);
+  color: white;
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .budget-info {
   margin-bottom: 0.75rem;
 }
@@ -76,6 +101,10 @@
   border-radius: 4px;
 }
 
+.budget-bar-fill.warning {
+  background: #F59E0B;
+}
+
 .budget-bar-fill.over-budget {
   background: #EF4444;
 }
@@ -101,6 +130,17 @@
   background: rgba(255, 255, 255, 0.95);
   color: var(--color-text);
   width: 100%;
+}
+
+.budget-input.input-error {
+  border-color: #EF4444;
+}
+
+.error-text {
+  color: #FCA5A5;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: -0.25rem;
 }
 
 .budget-edit button {

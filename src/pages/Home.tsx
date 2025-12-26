@@ -1,9 +1,60 @@
+import { useState, useEffect } from 'react';
 import { BudgetHeader } from '../components/BudgetHeader';
+import { BudgetSetupDialog } from '../components/BudgetSetupDialog';
+import { db } from '../utils/db';
 import './Home.css';
 
 export function Home() {
+  const [showBudgetSetup, setShowBudgetSetup] = useState(false);
+
+  useEffect(() => {
+    const checkFirstLaunch = async () => {
+      // Check if budget has been set or user has skipped
+      const budgetPromptShown = localStorage.getItem('budgetPromptShown');
+      
+      if (budgetPromptShown !== 'true') {
+        // Check if budget is already set (for existing users)
+        const settings = await db.getBudgetSettings();
+        if (!settings || settings.monthlyBudget === 0) {
+          setShowBudgetSetup(true);
+        } else {
+          // Budget already set, mark prompt as shown
+          localStorage.setItem('budgetPromptShown', 'true');
+        }
+      }
+    };
+
+    void checkFirstLaunch();
+  }, []);
+
+  const handleSaveBudget = async (budget: number) => {
+    await db.updateBudgetSettings(budget);
+    localStorage.setItem('budgetPromptShown', 'true');
+    setShowBudgetSetup(false);
+    
+    // Refresh the budget header
+    interface WindowWithRefresh extends Window {
+      __refreshBudgetHeader?: () => Promise<void>;
+    }
+    const refreshFn = (window as WindowWithRefresh).__refreshBudgetHeader;
+    if (refreshFn) {
+      await refreshFn();
+    }
+  };
+
+  const handleSkipBudget = () => {
+    localStorage.setItem('budgetPromptShown', 'true');
+    setShowBudgetSetup(false);
+  };
   return (
     <div className="home">
+      {showBudgetSetup && (
+        <BudgetSetupDialog 
+          onSave={handleSaveBudget} 
+          onSkip={handleSkipBudget} 
+        />
+      )}
+      
       <BudgetHeader />
       <main className="main-content">
         <div className="welcome-section">
