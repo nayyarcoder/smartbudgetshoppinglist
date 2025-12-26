@@ -2,9 +2,14 @@ import { useState, useEffect } from 'react';
 import { db } from '../utils/db';
 import './BudgetHeader.css';
 
-export function BudgetHeader() {
+interface BudgetHeaderProps {
+  suggestedTotal?: number;
+  spent?: number;
+  onBudgetChange?: () => void;
+}
+
+export function BudgetHeader({ suggestedTotal = 0, spent = 0, onBudgetChange }: BudgetHeaderProps) {
   const [monthlyBudget, setMonthlyBudget] = useState<number>(0);
-  const [spent, setSpent] = useState<number>(0);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState<string>('');
 
@@ -14,12 +19,6 @@ export function BudgetHeader() {
       if (settings) {
         setMonthlyBudget(settings.monthlyBudget);
       }
-
-      const items = await db.getAllItems();
-      const totalSpent = items
-        .filter(item => item.purchased)
-        .reduce((sum, item) => sum + item.price, 0);
-      setSpent(totalSpent);
     };
 
     void loadBudgetData();
@@ -31,6 +30,9 @@ export function BudgetHeader() {
       await db.updateBudgetSettings(newBudget);
       setMonthlyBudget(newBudget);
       setIsEditing(false);
+      if (onBudgetChange) {
+        onBudgetChange();
+      }
     }
   };
 
@@ -86,6 +88,14 @@ export function BudgetHeader() {
                   ${remaining.toFixed(2)}
                 </span>
               </div>
+              {suggestedTotal > 0 && (
+                <div className="budget-row">
+                  <span className="budget-label">Suggested:</span>
+                  <span className="budget-value suggested">
+                    ${suggestedTotal.toFixed(2)}
+                  </span>
+                </div>
+              )}
             </div>
           )}
         </div>
