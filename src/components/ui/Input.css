@@ -1,0 +1,123 @@
+.input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  width: 100%;
+}
+
+.input-label {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+  letter-spacing: 0.01em;
+}
+
+.input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-field {
+  width: 100%;
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out),
+              background-color var(--duration-fast) var(--ease-out);
+  outline: none;
+  min-height: 44px;
+}
+
+.input-field--with-icon {
+  padding-left: calc(var(--spacing-lg) * 2.5);
+}
+
+.input-field::placeholder {
+  color: var(--color-text-muted);
+}
+
+.input-field:hover {
+  border-color: var(--color-primary);
+}
+
+.input-field:focus,
+.input-field--focused {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px oklch(from var(--color-primary) l c h / 0.1);
+  background-color: var(--color-surface-elevated);
+}
+
+.input-field--error {
+  border-color: var(--color-error);
+}
+
+.input-field--error:focus {
+  box-shadow: 0 0 0 3px oklch(from var(--color-error) l c h / 0.1);
+}
+
+.input-field:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--color-surface);
+}
+
+.input-icon {
+  position: absolute;
+  left: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.input-error {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--color-error);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.input-error::before {
+  content: '⚠';
+  font-size: 1rem;
+}
+
+.input-helper {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+/* Mobile: Ensure 16px font to prevent zoom on iOS */
+@media (max-width: 768px) {
+  .input-field {
+    font-size: 16px;
+  }
+}
+
+/* Animations */
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-4px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(4px);
+  }
+}
+
+.input-field--error.input-field--shake {
+  animation: shake 0.4s var(--ease-out);
+}

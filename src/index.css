@@ -4,14 +4,62 @@
   --font-body: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Courier New', monospace;
   
-  /* Color scheme */
-  --color-primary: #4F46E5;
-  --color-primary-dark: #4338CA;
-  --color-background: #FFFFFF;
-  --color-text: #1F2937;
-  --color-text-secondary: #6B7280;
-  --color-border: #E5E7EB;
-  --color-surface: #F9FAFB;
+  /* Light theme colors - Based on PRD */
+  --color-primary: oklch(0.45 0.08 160); /* Deep Forest Green */
+  --color-primary-hover: oklch(0.40 0.09 160);
+  --color-secondary: oklch(0.75 0.06 150); /* Soft Sage */
+  --color-accent: oklch(0.68 0.17 25); /* Vibrant Coral */
+  --color-accent-hover: oklch(0.63 0.17 25);
+  --color-terracotta: oklch(0.65 0.12 35); /* Warm Terracotta */
+  
+  --color-background: oklch(0.97 0.01 85); /* Cream */
+  --color-surface: oklch(0.99 0.005 85);
+  --color-surface-elevated: oklch(1 0 0);
+  --color-text: oklch(0.25 0.02 260); /* Deep Charcoal */
+  --color-text-secondary: oklch(0.45 0.02 260);
+  --color-text-muted: oklch(0.60 0.01 260);
+  --color-border: oklch(0.88 0.01 260);
+  
+  /* Category colors */
+  --color-need: oklch(0.68 0.17 25); /* Vibrant Coral - Need to Have */
+  --color-good: oklch(0.65 0.12 35); /* Warm Terracotta - Good to Have */
+  --color-nice: oklch(0.75 0.06 150); /* Soft Sage - Nice to Have */
+  
+  /* Status colors */
+  --color-success: oklch(0.45 0.08 160);
+  --color-warning: oklch(0.70 0.15 75);
+  --color-error: oklch(0.65 0.20 25);
+  
+  /* Spacing scale */
+  --spacing-xs: 0.25rem; /* 4px */
+  --spacing-sm: 0.5rem; /* 8px */
+  --spacing-md: 0.75rem; /* 12px */
+  --spacing-lg: 1rem; /* 16px */
+  --spacing-xl: 1.5rem; /* 24px */
+  --spacing-2xl: 2rem; /* 32px */
+  
+  /* Border radius */
+  --radius-sm: 0.375rem; /* 6px */
+  --radius-md: 0.5rem; /* 8px */
+  --radius-lg: 0.75rem; /* 12px */
+  --radius-xl: 1rem; /* 16px */
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  /* Animation durations */
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 350ms;
+  
+  /* Animation easings */
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   
   font-family: var(--font-body);
   line-height: 1.6;
@@ -26,7 +74,7 @@
   -moz-osx-font-smoothing: grayscale;
   
   /* Touch optimization */
-  -webkit-tap-highlight-color: rgba(79, 70, 229, 0.2);
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
 }
 
 * {
@@ -98,14 +146,35 @@ a:hover {
   user-select: none;
 }
 
-/* Support for dark mode */
+/* Dark theme - Based on PRD */
+[data-theme="dark"],
 @media (prefers-color-scheme: dark) {
-  :root {
-    --color-background: #111827;
-    --color-text: #F9FAFB;
-    --color-text-secondary: #9CA3AF;
-    --color-border: #374151;
-    --color-surface: #1F2937;
+  :root:not([data-theme="light"]) {
+    --color-primary: oklch(0.55 0.10 160); /* Lighter Forest Green */
+    --color-primary-hover: oklch(0.60 0.11 160);
+    --color-secondary: oklch(0.35 0.04 150); /* Muted Sage */
+    --color-accent: oklch(0.72 0.18 28); /* Bright Coral */
+    --color-accent-hover: oklch(0.68 0.18 28);
+    --color-terracotta: oklch(0.68 0.13 37); /* Warm Terracotta */
+    
+    --color-background: oklch(0.15 0.01 260); /* Deep Charcoal */
+    --color-surface: oklch(0.20 0.01 260);
+    --color-surface-elevated: oklch(0.25 0.01 260);
+    --color-text: oklch(0.95 0.01 85); /* Light Cream */
+    --color-text-secondary: oklch(0.70 0.01 260);
+    --color-text-muted: oklch(0.55 0.01 260);
+    --color-border: oklch(0.30 0.01 260);
+    
+    /* Category colors for dark theme */
+    --color-need: oklch(0.72 0.18 28);
+    --color-good: oklch(0.68 0.13 37);
+    --color-nice: oklch(0.55 0.08 150);
+    
+    /* Adjust shadows for dark theme */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
   }
 }
 
