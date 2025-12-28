@@ -19,6 +19,7 @@ export default defineConfig({
         orientation: 'portrait',
         scope: '/',
         start_url: '/',
+        categories: ['shopping', 'finance', 'productivity'],
         icons: [
           {
             src: 'pwa-192x192.png',

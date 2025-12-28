@@ -28,7 +28,7 @@ const CATEGORY_INFO = {
 };
 
 export function ShoppingList({ items: propsItems, onDataChange }: ShoppingListProps) {
-  const [items, setItems] = useState<ShoppingItem[]>([]);
+  const [localItems, setLocalItems] = useState<ShoppingItem[]>([]);
   const [dragState, setDragState] = useState<DragState>({
     draggedItemId: null,
     draggedFromCategory: null,
@@ -40,21 +40,22 @@ export function ShoppingList({ items: propsItems, onDataChange }: ShoppingListPr
   const [addingToCategory, setAddingToCategory] = useState<CategoryType | null>(null);
   const [addForm, setAddForm] = useState({ name: '', price: '' });
 
+  // Use props items if provided, otherwise use local state
+  const items = propsItems || localItems;
+
   const loadItems = async () => {
     const allItems = await db.getAllItems();
-    setItems(allItems);
+    setLocalItems(allItems);
     if (onDataChange) {
       onDataChange();
     }
   };
 
   useEffect(() => {
-    if (propsItems) {
-      setItems(propsItems);
-    } else {
+    if (!propsItems) {
       const fetchItems = async () => {
         const allItems = await db.getAllItems();
-        setItems(allItems);
+        setLocalItems(allItems);
       };
       void fetchItems();
     }

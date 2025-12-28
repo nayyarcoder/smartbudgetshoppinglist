@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { InstallPrompt } from './components/InstallPrompt';
 import { Home } from './pages/Home';
 import './App.css';
 
@@ -10,6 +11,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
         </Routes>
+        <InstallPrompt />
       </BrowserRouter>
     </ErrorBoundary>
   );
