@@ -83,6 +83,7 @@ export function BudgetHeader({ suggestedTotal = 0, spent = 0, onBudgetChange }: 
 
   const remaining = monthlyBudget - spent;
   const percentUsed = monthlyBudget > 0 ? (spent / monthlyBudget) * 100 : 0;
+  const isOverBudget = remaining < 0;
 
   return (
     <header className="budget-header">
@@ -100,6 +101,8 @@ export function BudgetHeader({ suggestedTotal = 0, spent = 0, onBudgetChange }: 
                 onChange={(e) => setEditValue(e.target.value)}
                 className="budget-input"
                 autoFocus
+                step="0.01"
+                min="0.01"
               />
               {budgetError && (
                 <div className="budget-error">{budgetError}</div>
@@ -113,6 +116,7 @@ export function BudgetHeader({ suggestedTotal = 0, spent = 0, onBudgetChange }: 
               }} className="btn-cancel">
                 Cancel
               </button>
+              {budgetError && <div className="budget-error">{budgetError}</div>}
             </div>
           ) : (
             <div className="budget-display" onClick={handleEditClick}>
@@ -130,7 +134,7 @@ export function BudgetHeader({ suggestedTotal = 0, spent = 0, onBudgetChange }: 
               </div>
               <div className="budget-row">
                 <span className="budget-label">Remaining:</span>
-                <span className={`budget-value ${remaining < 0 ? 'over-budget' : ''}`}>
+                <span className={`budget-value ${isOverBudget ? 'over-budget' : ''}`}>
                   ${remaining.toFixed(2)}
                 </span>
               </div>
@@ -148,7 +152,7 @@ export function BudgetHeader({ suggestedTotal = 0, spent = 0, onBudgetChange }: 
 
         <div className="budget-bar">
           <div
-            className={`budget-bar-fill ${percentUsed > 100 ? 'over-budget' : ''}`}
+            className={`budget-bar-fill ${percentUsed > 100 ? 'over-budget' : ''} ${isOverBudget ? 'pulse' : ''}`}
             style={{ width: `${Math.min(percentUsed, 100)}%` }}
           />
         </div>
