@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { db, type ShoppingItem } from '../utils/db';
+import type { BudgetRecommendation } from '../utils/budgetRecommendations';
 import './ShoppingList.css';
 
 type CategoryType = 'need' | 'good' | 'nice';
@@ -14,13 +15,19 @@ interface UndoState {
   timestamp: number;
 }
 
+interface ShoppingListProps {
+  items?: ShoppingItem[];
+  recommendation?: BudgetRecommendation;
+  onDataChange?: () => void;
+}
+
 const CATEGORY_INFO = {
   need: { label: 'Need to Have', color: '#EF4444' },
   good: { label: 'Good to Have', color: '#F59E0B' },
   nice: { label: 'Nice to Have', color: '#10B981' },
 };
 
-export function ShoppingList() {
+export function ShoppingList({ items: propsItems, onDataChange }: ShoppingListProps) {
   const [items, setItems] = useState<ShoppingItem[]>([]);
   const [dragState, setDragState] = useState<DragState>({
     draggedItemId: null,
@@ -36,15 +43,22 @@ export function ShoppingList() {
   const loadItems = async () => {
     const allItems = await db.getAllItems();
     setItems(allItems);
+    if (onDataChange) {
+      onDataChange();
+    }
   };
 
   useEffect(() => {
-    const fetchItems = async () => {
-      const allItems = await db.getAllItems();
-      setItems(allItems);
-    };
-    void fetchItems();
-  }, []);
+    if (propsItems) {
+      setItems(propsItems);
+    } else {
+      const fetchItems = async () => {
+        const allItems = await db.getAllItems();
+        setItems(allItems);
+      };
+      void fetchItems();
+    }
+  }, [propsItems]);
 
   // Sort items within each category by manual order or price
   const sortItemsInCategory = (categoryItems: ShoppingItem[]): ShoppingItem[] => {

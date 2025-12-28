@@ -62,6 +62,10 @@
   font-weight: 700;
 }
 
+.budget-value.suggested {
+  color: #10B981;
+}
+
 .budget-bar {
   height: 8px;
   background: rgba(255, 255, 255, 0.2);
@@ -78,6 +82,19 @@
 
 .budget-bar-fill.over-budget {
   background: #EF4444;
+}
+
+.budget-bar-fill.pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .budget-edit {
@@ -126,6 +143,13 @@
 
 .budget-edit button:active {
   opacity: 0.8;
+}
+
+.budget-error {
+  color: #FCA5A5;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
 }
 
 /* Mobile optimizations */
