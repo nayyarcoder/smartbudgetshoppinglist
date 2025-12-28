@@ -32,10 +32,16 @@ export function BudgetHeader() {
     };
     
     load();
-    
-    // Reload budget periodically to reflect changes
-    const interval = setInterval(load, 2000);
-    return () => clearInterval(interval);
+
+    // Listen for budget updates from purchases
+    const handleBudgetUpdate = () => {
+      void loadBudgetData();
+    };
+
+    window.addEventListener('budgetUpdate', handleBudgetUpdate);
+    return () => {
+      window.removeEventListener('budgetUpdate', handleBudgetUpdate);
+    };
   }, []);
 
   const handleSaveBudget = async () => {

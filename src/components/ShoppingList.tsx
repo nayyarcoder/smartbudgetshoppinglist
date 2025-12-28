@@ -137,6 +137,10 @@ export function ShoppingList() {
       setUndoStack([...undoStack, { type: 'purchase', item: updated, previousState: item }]);
       setShowUndo(true);
       const timeoutId = setTimeout(() => setShowUndo(false), 5000);
+      
+      // Trigger budget update
+      window.dispatchEvent(new CustomEvent('budgetUpdate'));
+      
       return () => clearTimeout(timeoutId);
     } catch (error) {
       console.error('Failed to update item:', error);
@@ -171,6 +175,8 @@ export function ShoppingList() {
             setItems(items.map(i => 
               i.id === lastAction.item.id ? lastAction.previousState! : i
             ));
+            // Trigger budget update when undoing purchase
+            window.dispatchEvent(new CustomEvent('budgetUpdate'));
           }
           break;
       }
