@@ -6,18 +6,32 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
+const DISMISSAL_PERIOD_DAYS = 7;
+
+function shouldShowPrompt(): boolean {
+  const dismissed = localStorage.getItem('installPromptDismissed');
+  if (!dismissed) {
+    return true;
+  }
+  
+  const dismissedDate = new Date(dismissed);
+  if (isNaN(dismissedDate.getTime())) {
+    // Invalid date in localStorage, clear it and show prompt
+    localStorage.removeItem('installPromptDismissed');
+    return true;
+  }
+  
+  const daysSinceDismissed = (Date.now() - dismissedDate.getTime()) / MS_PER_DAY;
+  return daysSinceDismissed >= DISMISSAL_PERIOD_DAYS;
+}
+
 export function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   
   // Check if user dismissed recently on initial render
   const [showPrompt, setShowPrompt] = useState(() => {
-    const dismissed = localStorage.getItem('installPromptDismissed');
-    if (dismissed) {
-      const dismissedDate = new Date(dismissed);
-      const daysSinceDismissed = (Date.now() - dismissedDate.getTime()) / (1000 * 60 * 60 * 24);
-      return daysSinceDismissed >= 7;
-    }
-    return false;
+    return false; // Will be set to true when beforeinstallprompt fires
   });
 
   useEffect(() => {
@@ -27,15 +41,8 @@ export function InstallPrompt() {
       // Stash the event so it can be triggered later
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       // Show the custom install prompt only if not recently dismissed
-      const dismissed = localStorage.getItem('installPromptDismissed');
-      if (!dismissed) {
+      if (shouldShowPrompt()) {
         setShowPrompt(true);
-      } else {
-        const dismissedDate = new Date(dismissed);
-        const daysSinceDismissed = (Date.now() - dismissedDate.getTime()) / (1000 * 60 * 60 * 24);
-        if (daysSinceDismissed >= 7) {
-          setShowPrompt(true);
-        }
       }
     };
 
