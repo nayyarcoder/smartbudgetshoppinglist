@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { BudgetHeader } from '../components/BudgetHeader';
 import { ShoppingList } from '../components/ShoppingList';
 import { ItemForm } from '../components/ItemForm';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { db, type ShoppingItem } from '../utils/db';
 import { calculateBudgetRecommendations, type BudgetRecommendation } from '../utils/budgetRecommendations';
 import './Home.css';
@@ -52,18 +53,22 @@ export function Home() {
 
   return (
     <div className="home">
-      <BudgetHeader 
-        suggestedTotal={recommendation.suggestedTotal}
-        spent={spent}
-        onBudgetChange={handleBudgetChange}
-      />
-      <main className="main-content">
-        <ShoppingList 
-          key={refreshKey}
-          items={items}
-          recommendation={recommendation}
-          onDataChange={loadData}
+      <ErrorBoundary>
+        <BudgetHeader 
+          suggestedTotal={recommendation.suggestedTotal}
+          spent={spent}
+          onBudgetChange={handleBudgetChange}
         />
+      </ErrorBoundary>
+      <main className="main-content">
+        <ErrorBoundary>
+          <ShoppingList 
+            key={refreshKey}
+            items={items}
+            recommendation={recommendation}
+            onDataChange={loadData}
+          />
+        </ErrorBoundary>
       </main>
       <ItemForm onItemAdded={handleItemAdded} />
     </div>

@@ -41,46 +41,55 @@ export function ShoppingList({ items: propItems, recommendation, onDataChange }:
 
     // Wait for animation to complete
     setTimeout(async () => {
-      // Mark as purchased in database
-      await db.updateItem(item.id, { purchased: true });
-      
-      // Remove from list
-      setItems(prev => prev.filter(i => i.id !== item.id));
-      setPurchasingItem(null);
+      try {
+        // Mark as purchased in database
+        await db.updateItem(item.id, { purchased: true });
+        
+        // Remove from list
+        setItems(prev => prev.filter(i => i.id !== item.id));
+        setPurchasingItem(null);
 
-      // Show undo toast
-      const purchasedItem: PurchasedItem = {
-        ...item,
-        purchased: true,
-        purchasedAt: Date.now()
-      };
-      setUndoItem(purchasedItem);
-      setShowUndo(true);
+        // Show undo toast
+        const purchasedItem: PurchasedItem = {
+          ...item,
+          purchased: true,
+          purchasedAt: Date.now()
+        };
+        setUndoItem(purchasedItem);
+        setShowUndo(true);
 
-      // Trigger data reload
-      onDataChange();
+        // Trigger data reload
+        onDataChange();
 
-      // Auto-hide undo after timeout
-      setTimeout(() => {
-        setShowUndo(false);
-        setUndoItem(null);
-      }, UNDO_TIMEOUT_MS);
+        // Auto-hide undo after timeout
+        setTimeout(() => {
+          setShowUndo(false);
+          setUndoItem(null);
+        }, UNDO_TIMEOUT_MS);
+      } catch (error) {
+        console.error('Failed to purchase item:', error);
+        setPurchasingItem(null);
+      }
     }, PURCHASE_ANIMATION_DURATION);
   };
 
   const handleUndo = async () => {
     if (!undoItem) return;
 
-    // Mark as unpurchased
-    await db.updateItem(undoItem.id, { purchased: false });
-    
-    // Hide undo toast
-    setShowUndo(false);
-    
-    // Trigger data reload
-    onDataChange();
-    
-    setUndoItem(null);
+    try {
+      // Mark as unpurchased
+      await db.updateItem(undoItem.id, { purchased: false });
+      
+      // Hide undo toast
+      setShowUndo(false);
+      
+      // Trigger data reload
+      onDataChange();
+      
+      setUndoItem(null);
+    } catch (error) {
+      console.error('Failed to undo purchase:', error);
+    }
   };
 
   const handleDismissUndo = () => {

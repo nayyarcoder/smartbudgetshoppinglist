@@ -12,16 +12,25 @@ export function BudgetHeader({ suggestedTotal = 0, spent = 0, onBudgetChange }: 
   const [monthlyBudget, setMonthlyBudget] = useState<number>(0);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState<string>('');
+  const [budgetError, setBudgetError] = useState<string>('');
 
-  useEffect(() => {
-    const loadBudgetData = async () => {
+  const loadBudgetData = async () => {
+    try {
       const settings = await db.getBudgetSettings();
       if (settings) {
         setMonthlyBudget(settings.monthlyBudget);
       }
-    };
+    } catch (error) {
+      console.error('Failed to load budget data:', error);
+    }
+  };
 
-    void loadBudgetData();
+  useEffect(() => {
+    const load = () => {
+      void loadBudgetData();
+    };
+    
+    load();
 
     // Listen for budget updates from purchases
     const handleBudgetUpdate = () => {
@@ -36,19 +45,40 @@ export function BudgetHeader({ suggestedTotal = 0, spent = 0, onBudgetChange }: 
 
   const handleSaveBudget = async () => {
     const newBudget = parseFloat(editValue);
-    if (!isNaN(newBudget) && newBudget >= 0) {
+    
+    if (isNaN(newBudget)) {
+      setBudgetError('Please enter a valid number');
+      return;
+    }
+    
+    if (newBudget < 0) {
+      setBudgetError('Budget cannot be negative');
+      return;
+    }
+    
+    if (newBudget === 0) {
+      setBudgetError('Budget must be greater than zero');
+      return;
+    }
+    
+    try {
       await db.updateBudgetSettings(newBudget);
       setMonthlyBudget(newBudget);
       setIsEditing(false);
+      setBudgetError('');
       if (onBudgetChange) {
         onBudgetChange();
       }
+    } catch (error) {
+      console.error('Failed to save budget:', error);
+      setBudgetError('Failed to save budget. Please try again.');
     }
   };
 
   const handleEditClick = () => {
     setEditValue(monthlyBudget.toString());
     setIsEditing(true);
+    setBudgetError('');
   };
 
   const remaining = monthlyBudget - spent;
@@ -71,10 +101,16 @@ export function BudgetHeader({ suggestedTotal = 0, spent = 0, onBudgetChange }: 
                 className="budget-input"
                 autoFocus
               />
+              {budgetError && (
+                <div className="budget-error">{budgetError}</div>
+              )}
               <button onClick={handleSaveBudget} className="btn-save">
                 Save
               </button>
-              <button onClick={() => setIsEditing(false)} className="btn-cancel">
+              <button onClick={() => {
+                setIsEditing(false);
+                setBudgetError('');
+              }} className="btn-cancel">
                 Cancel
               </button>
             </div>
