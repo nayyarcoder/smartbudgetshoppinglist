@@ -37,7 +37,8 @@ export function Home() {
   // Load data on component mount - this is the correct pattern for initial data fetching
   useEffect(() => {
     void loadData();
-  }, [loadData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleItemAdded = () => {
     // Force ShoppingList to refresh
