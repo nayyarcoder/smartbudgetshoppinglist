@@ -2,9 +2,14 @@ import { useState, useEffect } from 'react';
 import { db } from '../utils/db';
 import './BudgetHeader.css';
 
-export function BudgetHeader() {
+interface BudgetHeaderProps {
+  suggestedTotal?: number;
+  spent?: number;
+  onBudgetChange?: () => void;
+}
+
+export function BudgetHeader({ suggestedTotal = 0, spent = 0, onBudgetChange }: BudgetHeaderProps) {
   const [monthlyBudget, setMonthlyBudget] = useState<number>(0);
-  const [spent, setSpent] = useState<number>(0);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState<string>('');
   const [budgetError, setBudgetError] = useState<string>('');
@@ -15,12 +20,6 @@ export function BudgetHeader() {
       if (settings) {
         setMonthlyBudget(settings.monthlyBudget);
       }
-
-      const items = await db.getAllItems();
-      const totalSpent = items
-        .filter(item => item.purchased)
-        .reduce((sum, item) => sum + item.price, 0);
-      setSpent(totalSpent);
     } catch (error) {
       console.error('Failed to load budget data:', error);
     }
@@ -67,6 +66,9 @@ export function BudgetHeader() {
       setMonthlyBudget(newBudget);
       setIsEditing(false);
       setBudgetError('');
+      if (onBudgetChange) {
+        onBudgetChange();
+      }
     } catch (error) {
       console.error('Failed to save budget:', error);
       setBudgetError('Failed to save budget. Please try again.');
@@ -102,6 +104,9 @@ export function BudgetHeader() {
                 step="0.01"
                 min="0.01"
               />
+              {budgetError && (
+                <div className="budget-error">{budgetError}</div>
+              )}
               <button onClick={handleSaveBudget} className="btn-save">
                 Save
               </button>
@@ -133,6 +138,14 @@ export function BudgetHeader() {
                   ${remaining.toFixed(2)}
                 </span>
               </div>
+              {suggestedTotal > 0 && (
+                <div className="budget-row">
+                  <span className="budget-label">Suggested:</span>
+                  <span className="budget-value suggested">
+                    ${suggestedTotal.toFixed(2)}
+                  </span>
+                </div>
+              )}
             </div>
           )}
         </div>
