@@ -3,219 +3,415 @@ import { db, type ShoppingItem } from '../utils/db';
 import type { BudgetRecommendation } from '../utils/budgetRecommendations';
 import './ShoppingList.css';
 
-interface ShoppingListProps {
+type CategoryType = 'need' | 'good' | 'nice';
+
+interface DragState {
+  draggedItemId: string | null;
+  draggedFromCategory: CategoryType | null;
+}
+
+interface UndoState {
   items: ShoppingItem[];
-  recommendation: BudgetRecommendation;
-  onDataChange: () => void;
+  timestamp: number;
 }
 
-interface PurchasedItem extends ShoppingItem {
-  purchasedAt: number;
+interface ShoppingListProps {
+  items?: ShoppingItem[];
+  recommendation?: BudgetRecommendation;
+  onDataChange?: () => void;
 }
 
-const PURCHASE_ANIMATION_DURATION = 300;
-const UNDO_TIMEOUT_MS = 5000;
+const CATEGORY_INFO = {
+  need: { label: 'Need to Have', color: '#EF4444' },
+  good: { label: 'Good to Have', color: '#F59E0B' },
+  nice: { label: 'Nice to Have', color: '#10B981' },
+};
 
-export function ShoppingList({ items: propItems, recommendation, onDataChange }: ShoppingListProps) {
+export function ShoppingList({ items: propsItems, onDataChange }: ShoppingListProps) {
   const [items, setItems] = useState<ShoppingItem[]>([]);
-  const [purchasingItem, setPurchasingItem] = useState<string | null>(null);
-  const [undoItem, setUndoItem] = useState<PurchasedItem | null>(null);
+  const [dragState, setDragState] = useState<DragState>({
+    draggedItemId: null,
+    draggedFromCategory: null,
+  });
+  const [undoStack, setUndoStack] = useState<UndoState[]>([]);
   const [showUndo, setShowUndo] = useState(false);
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ name: '', price: '' });
+  const [addingToCategory, setAddingToCategory] = useState<CategoryType | null>(null);
+  const [addForm, setAddForm] = useState({ name: '', price: '' });
+
+  const loadItems = async () => {
+    const allItems = await db.getAllItems();
+    setItems(allItems);
+    if (onDataChange) {
+      onDataChange();
+    }
+  };
 
   useEffect(() => {
-    // Only show unpurchased items
-    const unpurchased = propItems.filter(item => !item.purchased);
-    setItems(unpurchased.sort((a, b) => {
-      // Sort by category priority, then by order
-      const categoryOrder = { need: 0, good: 1, nice: 2 };
-      if (categoryOrder[a.category] !== categoryOrder[b.category]) {
-        return categoryOrder[a.category] - categoryOrder[b.category];
+    if (propsItems) {
+      setItems(propsItems);
+    } else {
+      const fetchItems = async () => {
+        const allItems = await db.getAllItems();
+        setItems(allItems);
+      };
+      void fetchItems();
+    }
+  }, [propsItems]);
+
+  // Sort items within each category by manual order or price
+  const sortItemsInCategory = (categoryItems: ShoppingItem[]): ShoppingItem[] => {
+    return [...categoryItems].sort((a, b) => {
+      // If both have manual order, use that
+      if (a.manualOrder !== null && b.manualOrder !== null) {
+        return a.manualOrder - b.manualOrder;
       }
-      return a.order - b.order;
-    }));
-  }, [propItems]);
+      // If only one has manual order, it comes first
+      if (a.manualOrder !== null) return -1;
+      if (b.manualOrder !== null) return 1;
+      // Otherwise sort by price (ascending)
+      return a.price - b.price;
+    });
+  };
 
-  const handlePurchase = async (item: ShoppingItem) => {
-    // Start fade-out animation
-    setPurchasingItem(item.id);
+  const getItemsByCategory = (category: CategoryType): ShoppingItem[] => {
+    const categoryItems = items.filter(
+      (item) => item.category === category && !item.purchased
+    );
+    return sortItemsInCategory(categoryItems);
+  };
 
-    // Wait for animation to complete
-    setTimeout(async () => {
-      try {
-        // Mark as purchased in database
-        await db.updateItem(item.id, { purchased: true });
-        
-        // Remove from list
-        setItems(prev => prev.filter(i => i.id !== item.id));
-        setPurchasingItem(null);
-
-        // Show undo toast
-        const purchasedItem: PurchasedItem = {
-          ...item,
-          purchased: true,
-          purchasedAt: Date.now()
-        };
-        setUndoItem(purchasedItem);
-        setShowUndo(true);
-
-        // Trigger data reload
-        onDataChange();
-
-        // Auto-hide undo after timeout
-        setTimeout(() => {
-          setShowUndo(false);
-          setUndoItem(null);
-        }, UNDO_TIMEOUT_MS);
-      } catch (error) {
-        console.error('Failed to purchase item:', error);
-        setPurchasingItem(null);
+  const handleDragStart = (e: React.DragEvent, item: ShoppingItem) => {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', e.currentTarget.innerHTML);
+    setDragState({
+      draggedItemId: item.id,
+      draggedFromCategory: item.category,
+    });
+    
+    // Add dragging class after a tiny delay to avoid flash
+    setTimeout(() => {
+      const element = e.currentTarget as HTMLElement;
+      if (element && element.classList) {
+        element.classList.add('dragging');
       }
-    }, PURCHASE_ANIMATION_DURATION);
+    }, 0);
+  };
+
+  const handleDragEnd = (e: React.DragEvent) => {
+    const element = e.currentTarget as HTMLElement;
+    if (element && element.classList) {
+      element.classList.remove('dragging');
+    }
+    setDragState({
+      draggedItemId: null,
+      draggedFromCategory: null,
+    });
+  };
+
+  const handleDragOver = (e: React.DragEvent, targetItem: ShoppingItem) => {
+    e.preventDefault();
+    
+    // Prevent cross-category drops
+    if (
+      dragState.draggedFromCategory &&
+      dragState.draggedFromCategory !== targetItem.category
+    ) {
+      e.dataTransfer.dropEffect = 'none';
+      return;
+    }
+    
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetItem: ShoppingItem) => {
+    e.preventDefault();
+    
+    const { draggedItemId, draggedFromCategory } = dragState;
+    
+    if (!draggedItemId || draggedFromCategory !== targetItem.category) {
+      return;
+    }
+
+    // Save current state for undo
+    setUndoStack((prev) => [...prev, { items: [...items], timestamp: Date.now() }]);
+    setShowUndo(true);
+    setTimeout(() => setShowUndo(false), 5000);
+
+    // Reorder items in the category
+    const categoryItems = getItemsByCategory(targetItem.category);
+    const draggedIndex = categoryItems.findIndex((item) => item.id === draggedItemId);
+    const targetIndex = categoryItems.findIndex((item) => item.id === targetItem.id);
+    
+    if (draggedIndex === -1 || targetIndex === -1) return;
+
+    // Create new order
+    const newOrder = [...categoryItems];
+    const [draggedItem] = newOrder.splice(draggedIndex, 1);
+    newOrder.splice(targetIndex, 0, draggedItem);
+
+    // Update manual order for all items in the category
+    const updates = newOrder.map((item, index) => 
+      db.updateItem(item.id, { manualOrder: index })
+    );
+    
+    await Promise.all(updates);
+    await loadItems();
   };
 
   const handleUndo = async () => {
-    if (!undoItem) return;
-
-    try {
-      // Mark as unpurchased
-      await db.updateItem(undoItem.id, { purchased: false });
-      
-      // Hide undo toast
-      setShowUndo(false);
-      
-      // Trigger data reload
-      onDataChange();
-      
-      setUndoItem(null);
-    } catch (error) {
-      console.error('Failed to undo purchase:', error);
-    }
-  };
-
-  const handleDismissUndo = () => {
+    if (undoStack.length === 0) return;
+    
+    const lastState = undoStack[undoStack.length - 1];
+    setUndoStack((prev) => prev.slice(0, -1));
     setShowUndo(false);
-    setUndoItem(null);
+    
+    // Restore items to database
+    const updates = lastState.items.map((item) =>
+      db.updateItem(item.id, { manualOrder: item.manualOrder })
+    );
+    
+    await Promise.all(updates);
+    await loadItems();
   };
 
-  const getCategoryLabel = (category: string) => {
-    switch (category) {
-      case 'need': return 'Need to Have';
-      case 'good': return 'Good to Have';
-      case 'nice': return 'Nice to Have';
-      default: return category;
+  const handleAddItem = async (category: CategoryType) => {
+    if (!addForm.name.trim() || !addForm.price) return;
+    
+    const price = parseFloat(addForm.price);
+    if (isNaN(price) || price <= 0) return;
+
+    await db.addItem({
+      name: addForm.name.trim(),
+      price,
+      category,
+      purchased: false,
+      order: 0,
+      manualOrder: null,
+    });
+    
+    setAddForm({ name: '', price: '' });
+    setAddingToCategory(null);
+    await loadItems();
+  };
+
+  const handleEditItem = async (item: ShoppingItem) => {
+    setEditingItemId(item.id);
+    setEditForm({ name: item.name, price: item.price.toString() });
+  };
+
+  const handleSaveEdit = async (itemId: string) => {
+    if (!editForm.name.trim() || !editForm.price) return;
+    
+    const price = parseFloat(editForm.price);
+    if (isNaN(price) || price <= 0) return;
+
+    await db.updateItem(itemId, {
+      name: editForm.name.trim(),
+      price,
+    });
+    
+    setEditingItemId(null);
+    await loadItems();
+  };
+
+  const handleDeleteItem = async (itemId: string) => {
+    if (confirm('Are you sure you want to delete this item?')) {
+      await db.deleteItem(itemId);
+      await loadItems();
     }
   };
 
-  const isItemAffordable = (item: ShoppingItem) => {
-    return recommendation.affordableItems.some(i => i.id === item.id);
+  const handleTogglePurchased = async (item: ShoppingItem) => {
+    await db.updateItem(item.id, { purchased: !item.purchased });
+    await loadItems();
   };
 
-  const groupedItems = items.reduce((acc, item) => {
-    if (!acc[item.category]) {
-      acc[item.category] = [];
-    }
-    acc[item.category].push(item);
-    return acc;
-  }, {} as Record<string, ShoppingItem[]>);
+  const renderItem = (item: ShoppingItem) => {
+    const isEditing = editingItemId === item.id;
+    const isDragging = dragState.draggedItemId === item.id;
 
-  const categories = ['need', 'good', 'nice'] as const;
-  const totalUnpurchased = items.length;
-  const affordableCount = recommendation.affordableItems.length;
-  const unaffordableCount = recommendation.unaffordableItems.length;
+    return (
+      <div
+        key={item.id}
+        className={`item-card ${isDragging ? 'dragging' : ''}`}
+        draggable={!isEditing}
+        onDragStart={(e) => handleDragStart(e, item)}
+        onDragEnd={handleDragEnd}
+        onDragOver={(e) => handleDragOver(e, item)}
+        onDrop={(e) => handleDrop(e, item)}
+        role="listitem"
+        aria-label={`${item.name}, $${item.price.toFixed(2)}`}
+      >
+        {!isEditing && (
+          <div className="drag-handle" title="Drag to reorder">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <circle cx="7" cy="5" r="1.5" />
+              <circle cx="13" cy="5" r="1.5" />
+              <circle cx="7" cy="10" r="1.5" />
+              <circle cx="13" cy="10" r="1.5" />
+              <circle cx="7" cy="15" r="1.5" />
+              <circle cx="13" cy="15" r="1.5" />
+            </svg>
+          </div>
+        )}
+        
+        <div className="item-content">
+          {isEditing ? (
+            <div className="item-edit-form">
+              <input
+                type="text"
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                placeholder="Item name"
+                className="item-input"
+              />
+              <input
+                type="number"
+                value={editForm.price}
+                onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+                placeholder="Price"
+                step="0.01"
+                min="0"
+                className="item-input item-price-input"
+              />
+              <div className="item-edit-actions">
+                <button
+                  onClick={() => handleSaveEdit(item.id)}
+                  className="btn-save"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => setEditingItemId(null)}
+                  className="btn-cancel"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="item-info">
+                <span className="item-name">{item.name}</span>
+                <span className="item-price">${item.price.toFixed(2)}</span>
+              </div>
+              
+              <div className="item-actions">
+                <button
+                  onClick={() => handleTogglePurchased(item)}
+                  className="btn-icon"
+                  title="Mark as purchased"
+                  aria-label="Mark as purchased"
+                >
+                  ✓
+                </button>
+                <button
+                  onClick={() => handleEditItem(item)}
+                  className="btn-icon"
+                  title="Edit item"
+                  aria-label="Edit item"
+                >
+                  ✎
+                </button>
+                <button
+                  onClick={() => handleDeleteItem(item.id)}
+                  className="btn-icon btn-delete"
+                  title="Delete item"
+                  aria-label="Delete item"
+                >
+                  🗑
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderCategory = (category: CategoryType) => {
+    const categoryItems = getItemsByCategory(category);
+    const info = CATEGORY_INFO[category];
+    const isAdding = addingToCategory === category;
+
+    return (
+      <div key={category} className="category-section">
+        <div className="category-header" style={{ borderLeftColor: info.color }}>
+          <h2 className="category-title">{info.label}</h2>
+          <span className="category-count">{categoryItems.length}</span>
+        </div>
+        
+        {categoryItems.length === 0 && !isAdding ? (
+          <div className="empty-category">
+            <p>No items yet. Add your first {info.label.toLowerCase()} item!</p>
+          </div>
+        ) : (
+          <div className="items-list" role="list" aria-label={`${info.label} items`}>
+            {categoryItems.map(renderItem)}
+          </div>
+        )}
+        
+        {isAdding ? (
+          <div className="add-item-form">
+            <input
+              type="text"
+              value={addForm.name}
+              onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
+              placeholder="Item name"
+              className="item-input"
+              autoFocus
+            />
+            <input
+              type="number"
+              value={addForm.price}
+              onChange={(e) => setAddForm({ ...addForm, price: e.target.value })}
+              placeholder="Price"
+              step="0.01"
+              min="0"
+              className="item-input item-price-input"
+            />
+            <div className="add-item-actions">
+              <button
+                onClick={() => handleAddItem(category)}
+                className="btn-save"
+              >
+                Add
+              </button>
+              <button
+                onClick={() => {
+                  setAddingToCategory(null);
+                  setAddForm({ name: '', price: '' });
+                }}
+                className="btn-cancel"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setAddingToCategory(category)}
+            className="btn-add-item"
+          >
+            + Add Item
+          </button>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="shopping-list">
-      {/* Affordability Summary */}
-      {totalUnpurchased > 0 && (
-        <div className="affordability-summary">
-          <h3>Smart Budget Recommendation</h3>
-          <div className="summary-stats">
-            <div className="stat-item">
-              <span className="stat-label">Affordable</span>
-              <span className="stat-value">{affordableCount}</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-label">Over Budget</span>
-              <span className="stat-value exceeded">{unaffordableCount}</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-label">Suggested Total</span>
-              <span className="stat-value suggested">
-                ${recommendation.suggestedTotal.toFixed(2)}
-              </span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-label">Total Items</span>
-              <span className="stat-value">{totalUnpurchased}</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {categories.map(category => (
-        <div key={category} className="category-section">
-          <h2 className={`category-header category-${category}`}>
-            {getCategoryLabel(category)}
-            <span className="item-count">
-              {groupedItems[category]?.length || 0}
-            </span>
-          </h2>
-          
-          <div className="items-container">
-            {groupedItems[category]?.length > 0 ? (
-              groupedItems[category].map(item => {
-                const affordable = isItemAffordable(item);
-                return (
-                  <div
-                    key={item.id}
-                    className={`item-card ${purchasingItem === item.id ? 'purchasing' : ''} ${affordable ? 'affordable' : 'unaffordable'}`}
-                  >
-                    <button
-                      className="purchase-button"
-                      onClick={() => handlePurchase(item)}
-                      aria-label="Mark as purchased"
-                      disabled={purchasingItem === item.id}
-                    >
-                      <span className="checkbox-icon">
-                        {purchasingItem === item.id ? '✓' : ''}
-                      </span>
-                    </button>
-                    
-                    <div className="item-content">
-                      <div className="item-name">{item.name}</div>
-                      <div className="item-price">${item.price.toFixed(2)}</div>
-                    </div>
-
-                    <div className="affordability-indicator">
-                      {affordable ? '✓' : '⚠️'}
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="empty-state">
-                <p>No {category} items yet</p>
-              </div>
-            )}
-          </div>
-        </div>
-      ))}
-
-      {showUndo && undoItem && (
+      {(['need', 'good', 'nice'] as CategoryType[]).map(renderCategory)}
+      
+      {showUndo && undoStack.length > 0 && (
         <div className="undo-toast">
-          <div className="undo-content">
-            <span className="undo-message">
-              {undoItem.name} purchased
-            </span>
-            <div className="undo-actions">
-              <button className="undo-button" onClick={handleUndo}>
-                Undo
-              </button>
-              <button className="dismiss-button" onClick={handleDismissUndo} aria-label="Dismiss">
-                ✕
-              </button>
-            </div>
-          </div>
+          <span>Item reordered</span>
+          <button onClick={handleUndo} className="btn-undo">
+            Undo
+          </button>
         </div>
       )}
     </div>

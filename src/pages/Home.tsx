@@ -36,7 +36,6 @@ export function Home() {
 
   // Load data on component mount - this is the correct pattern for initial data fetching
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadData();
   }, [loadData]);
 

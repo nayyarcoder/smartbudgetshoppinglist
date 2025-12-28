@@ -32,6 +32,7 @@ export function ItemForm({ onItemAdded }: ItemFormProps) {
       category,
       purchased: false,
       order: Date.now(), // Use timestamp for initial order
+      manualOrder: null, // Start with price-based sorting
     });
 
     // Reset form
