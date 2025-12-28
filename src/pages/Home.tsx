@@ -1,26 +1,19 @@
-import { useState } from 'react';
 import { BudgetHeader } from '../components/BudgetHeader';
 import { ShoppingList } from '../components/ShoppingList';
-import { ItemForm } from '../components/ItemForm';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import './Home.css';
 
 export function Home() {
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  const handleItemAdded = () => {
-    // Force ShoppingList to refresh
-    setRefreshKey(prev => prev + 1);
-    // Trigger budget update
-    window.dispatchEvent(new CustomEvent('budgetUpdate'));
-  };
-
   return (
     <div className="home">
-      <BudgetHeader />
+      <ErrorBoundary>
+        <BudgetHeader />
+      </ErrorBoundary>
       <main className="main-content">
-        <ShoppingList key={refreshKey} />
+        <ErrorBoundary>
+          <ShoppingList />
+        </ErrorBoundary>
       </main>
-      <ItemForm onItemAdded={handleItemAdded} />
     </div>
   );
 }
