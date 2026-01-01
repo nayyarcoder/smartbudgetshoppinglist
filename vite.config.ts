@@ -8,7 +8,8 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      injectRegister: null,
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
         name: 'Smart Budget Shopping List',
         short_name: 'SmartBudget',
@@ -81,24 +82,16 @@ export default defineConfig({
         ]
       },
       devOptions: {
-        enabled: true
+        enabled: false
       }
     })
   ],
   server: {
     host: '0.0.0.0',
-    port: 5173,
-    https: {
-      key: './localhost+3-key.pem',
-      cert: './localhost+3.pem'
-    }
+    port: 5173
   },
   preview: {
     host: '0.0.0.0',
-    port: 4173,
-    https: {
-      key: './localhost+3-key.pem',
-      cert: './localhost+3.pem'
-    }
+    port: 4173
   }
 })

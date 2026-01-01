@@ -84,6 +84,12 @@ export function ShoppingList({ items: propsItems, onDataChange }: ShoppingListPr
   };
 
   const handleDragStart = (e: React.DragEvent, item: ShoppingItem) => {
+    // Disable drag-and-drop on touch devices (unreliable on Android)
+    if ('ontouchstart' in window) {
+      e.preventDefault();
+      return;
+    }
+    
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/html', e.currentTarget.innerHTML);
     setDragState({
@@ -237,7 +243,7 @@ export function ShoppingList({ items: propsItems, onDataChange }: ShoppingListPr
       <div
         key={item.id}
         className={`item-card ${isDragging ? 'dragging' : ''}`}
-        draggable={!isEditing}
+        draggable={!isEditing && !('ontouchstart' in window)}
         onDragStart={(e) => handleDragStart(e, item)}
         onDragEnd={handleDragEnd}
         onDragOver={(e) => handleDragOver(e, item)}
@@ -269,12 +275,12 @@ export function ShoppingList({ items: propsItems, onDataChange }: ShoppingListPr
                 className="item-input"
               />
               <input
-                type="number"
+                type="text"
+                inputMode="decimal"
+                pattern="[0-9]*\.?[0-9]*"
                 value={editForm.price}
                 onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
                 placeholder="Price"
-                step="0.01"
-                min="0"
                 className="item-input item-price-input"
               />
               <div className="item-edit-actions">
@@ -365,12 +371,12 @@ export function ShoppingList({ items: propsItems, onDataChange }: ShoppingListPr
               autoFocus
             />
             <input
-              type="number"
+              type="text"
+              inputMode="decimal"
+              pattern="[0-9]*\.?[0-9]*"
               value={addForm.price}
               onChange={(e) => setAddForm({ ...addForm, price: e.target.value })}
               placeholder="Price"
-              step="0.01"
-              min="0"
               className="item-input item-price-input"
             />
             <div className="add-item-actions">

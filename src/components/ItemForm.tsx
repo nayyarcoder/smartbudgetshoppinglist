@@ -97,9 +97,9 @@ export function ItemForm({ onItemAdded }: ItemFormProps) {
             <label htmlFor="item-price">Price ($)</label>
             <input
               id="item-price"
-              type="number"
-              step="0.01"
-              min="0"
+              type="text"
+              inputMode="decimal"
+              pattern="[0-9]*\.?[0-9]*"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               placeholder="0.00"
