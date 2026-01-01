@@ -85,4 +85,20 @@ export default defineConfig({
       }
     })
   ],
+  server: {
+    host: '0.0.0.0',
+    port: 5173,
+    https: {
+      key: './localhost+3-key.pem',
+      cert: './localhost+3.pem'
+    }
+  },
+  preview: {
+    host: '0.0.0.0',
+    port: 4173,
+    https: {
+      key: './localhost+3-key.pem',
+      cert: './localhost+3.pem'
+    }
+  }
 })
