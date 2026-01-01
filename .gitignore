@@ -23,3 +23,10 @@ dev-dist
 *.njsproj
 *.sln
 *.sw?
+
+# Deployment and certificate files
+public/install-cert.html
+public/rootCA.crt
+public/rootCA.pem
+localhost+3.pem
+localhost+3-key.pem
